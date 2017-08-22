@@ -3,9 +3,8 @@ defmodule Feeder do
   require Logger
 
   def start(_type, _args) do
-    Logger.info("starting feeder 🤖")
-
     import Supervisor.Spec, warn: false
+    Logger.info("starting feeder 🤖")
 
     children = [
       worker(Feeder.Scheduler, []),
