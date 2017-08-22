@@ -10,7 +10,7 @@ defmodule Feeder.Fetcher do
     GenServer.call(__MODULE__, :fetch)
   end
 
-  # ==> callbacks
+  # callbacks
   def init(_) do
     {:ok, nil}
   end

@@ -3,24 +3,24 @@ defmodule Feeder.Telegram.TelegramService do
   @base_url "https://api.telegram.org"
   @bot_id File.read!(Application.get_env(:feeder, :token_file))
 
-  # ==> get_updates
+  # get_updates
   @get_updates_path "getUpdates"
   @offset_query_param "offset"
 
-  # ==> send_message
+  # send_message
   @send_message_path "sendMessage"
   @chat_id_query_param "chat_id"
   @text_query_param "text"
 
-  # ==> fetch messages
+  # fetch messages
   def fetch_messages(last_id) do
     url = "#{@base_url}/#{@bot_id}/#{@get_updates_path}"
 
-    options = case get_offset(last_id) do
+    options = case last_id do
       nil ->
         []
       offset ->
-        [{@offset_query_param, offset}]
+        [{@offset_query_param, last_id + 1}]
     end
 
     exec_req(url, fn() -> HTTPoison.get!(url, [], [{:params, options}]) end)
@@ -28,15 +28,7 @@ defmodule Feeder.Telegram.TelegramService do
       |> Map.get("result")
   end
 
-  defp get_offset(nil) do
-    nil
-  end
-
-  defp get_offset(last_id) do
-    last_id + 1
-  end
-
-  # ==> send message
+  # send message
   def send_message({chat_id, text}) do
     url = "#{@base_url}/#{@bot_id}/#{@send_message_path}"
 
