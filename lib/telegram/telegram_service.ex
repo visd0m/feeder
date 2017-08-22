@@ -23,16 +23,8 @@ defmodule Feeder.Telegram.TelegramService do
         [{@offset_query_param, offset}]
     end
 
-    exec_req(
-      url,
-      fn() ->
-        HTTPoison.get!(
-          url,
-          [],
-          [{:params, options}]
-        )
-      end
-    ) |> Poison.decode!()
+    exec_req(url, fn() -> HTTPoison.get!(url, [], [{:params, options}]) end)
+      |> Poison.decode!()
       |> Map.get("result")
   end
 
@@ -53,16 +45,7 @@ defmodule Feeder.Telegram.TelegramService do
       {@text_query_param, text}
     ]
 
-    Poison.decode!(exec_req(
-      url,
-      fn() ->
-        HTTPoison.get!(
-          url,
-          [],
-          [{:params, options}]
-        )
-      end
-    ))
+    Poison.decode!(exec_req(url, fn() -> HTTPoison.get!(url, [], [{:params, options}]) end))
   end
 
   defp exec_req(url, req) do
