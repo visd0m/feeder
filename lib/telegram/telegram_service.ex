@@ -1,6 +1,7 @@
 defmodule Feeder.Telegram.TelegramService do
   require Logger
   @base_url "https://api.telegram.org"
+  @bot_id File.read!(Application.get_env(:feeder, :token_file))
 
   # ==> get_updates
   @get_updates_path "getUpdates"
@@ -10,7 +11,6 @@ defmodule Feeder.Telegram.TelegramService do
   @send_message_path "sendMessage"
   @chat_id_query_param "chat_id"
   @text_query_param "text"
-  @bot_id File.read!(Application.get_env(:feeder, :token_file))
 
   # ==> fetch messages
   def fetch_messages(last_id) do
