@@ -14,7 +14,7 @@ defmodule Feeder.Telegram.TelegramService do
 
   # ==> fetch messages
   def fetch_messages(last_id) do
-    Logger.info("fetching messages ...")
+    url = "#{@base_url}/#{@bot_id}/#{@get_updates_path}"
 
     options = case get_offset(last_id) do
       nil ->
@@ -23,17 +23,17 @@ defmodule Feeder.Telegram.TelegramService do
         [{@offset_query_param, offset}]
     end
 
-    Logger.info("REQ ==> #{@base_url}/#{@bot_id}/#{@get_updates_path}")
-    message_beans = HTTPoison.get!(
-      "#{@base_url}/#{@bot_id}/#{@get_updates_path}",
-      [],
-      [{:params, options}]
-    ).body
-      |> Poison.decode!()
+    exec_req(
+      url,
+      fn() ->
+        HTTPoison.get!(
+          url,
+          [],
+          [{:params, options}]
+        )
+      end
+    ) |> Poison.decode!()
       |> Map.get("result")
-
-    Logger.info("fetched messages: #{inspect(message_beans)}")
-    message_beans
   end
 
   defp get_offset(nil) do
@@ -46,18 +46,29 @@ defmodule Feeder.Telegram.TelegramService do
 
   # ==> send message
   def send_message({chat_id, text}) do
+    url = "#{@base_url}/#{@bot_id}/#{@send_message_path}"
+
     options = [
       {@chat_id_query_param, chat_id},
       {@text_query_param, text}
     ]
 
-    message = HTTPoison.get!(
-      "#{@base_url}/#{@bot_id}/#{@send_message_path}",
-      [],
-      [{:params, options}]
-    ).body
-      |> Poison.decode!()
+    Poison.decode!(exec_req(
+      url,
+      fn() ->
+        HTTPoison.get!(
+          url,
+          [],
+          [{:params, options}]
+        )
+      end
+    ))
+  end
 
-    Logger.info("#{inspect(message)}")
+  defp exec_req(url, req) do
+    Logger.info("[REQ] ==> #{url}")
+    body = req.().body
+    Logger.info("[RES] <== #{body}")
+    body
   end
 end
