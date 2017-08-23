@@ -1,5 +1,6 @@
 defmodule Feeder.Telegram.TelegramService do
   require Logger
+
   @base_url "https://api.telegram.org"
   @bot_id File.read!(Application.get_env(:feeder, :token_file))
 
@@ -13,6 +14,7 @@ defmodule Feeder.Telegram.TelegramService do
   @text_query_param "text"
 
   # fetch messages
+  @spec fetch_messages(String.t) :: Feeder.Telegram.Model.MessageWrapper
   def fetch_messages(last_id) do
     url = "#{@base_url}/#{@bot_id}/#{@get_updates_path}"
 
@@ -20,12 +22,12 @@ defmodule Feeder.Telegram.TelegramService do
       nil ->
         []
       offset ->
-        [{@offset_query_param, last_id + 1}]
+        [{@offset_query_param, offset + 1}]
     end
 
-    exec_req(url, fn() -> HTTPoison.get!(url, [], [{:params, options}]) end)
-      |> Poison.decode!()
-      |> Map.get("result")
+    Poison.decode!(
+      exec_req(url, fn() -> HTTPoison.get!(url, [], [{:params, options}]) end)
+    )["result"]
   end
 
   # send message

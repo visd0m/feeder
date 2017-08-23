@@ -33,7 +33,8 @@ defmodule Feeder.Mixfile do
       {:logger_file_backend, "~> 0.0.7"},
       {:poison, "~> 3.1"},
       {:quantum, ">= 2.1.0-beta.1"},
-      {:timex, "~> 3.0"}
+      {:timex, "~> 3.0"},
+      {:ecto, "~> 2.0"}
     ]
   end
 end

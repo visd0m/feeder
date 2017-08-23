@@ -1,9 +1,20 @@
 defmodule Feeder.Telegram.Model do
   defmodule Response do
-    defstruct message: nil,
-              update_id: nil
+    defstruct "ok": nil,
+              "result": nil
 
     @type t :: %Response{
+      ok: Boolean,
+      result: list(MessageWrapper.t)
+    }
+  end
+
+  defmodule MessageWrapper do
+    defstruct "message": nil,
+              update_id: nil
+
+    @type t :: %MessageWrapper{
+      update_id: String.t,
       message: Message.t
     }
   end
