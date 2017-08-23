@@ -17,11 +17,7 @@ defmodule Feeder.Telegram.Fetcher do
 
   def handle_call(:fetch, _from, last_id) do
     new_last_id = case messages = Feeder.Telegram.TelegramService.fetch_messages(last_id) do
-      nil ->
-        nil
-      [] ->
-        nil
-      _ ->
+      [_|_] ->
         messages
           |> Enum.filter(fn(message_wrapper) ->
             case text = message_wrapper["message"]["text"] do
@@ -32,8 +28,9 @@ defmodule Feeder.Telegram.Fetcher do
             end
           end)
           |> Feeder.Telegram.MessageHandler.handle_commands
-
         List.last(messages)["update_id"]
+      _ ->
+        nil
     end
 
     {:reply, messages, new_last_id}
