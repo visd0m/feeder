@@ -10,6 +10,10 @@ defmodule Feeder.Telegram.Fetcher do
     GenServer.call(__MODULE__, :fetch)
   end
 
+  def send_message(message) do
+    GenServer.cast(__MODULE__, {:send, message})
+  end
+
   # callbacks
   def init(_) do
     {:ok, nil}
@@ -20,7 +24,7 @@ defmodule Feeder.Telegram.Fetcher do
       [_ | _] ->
         messages
           |> Enum.filter(fn(message_wrapper) -> is_command(message_wrapper) end)
-          |> Feeder.Telegram.MessageHandler.handle_commands
+          |> Enum.each(fn(command) -> Feeder.Telegram.MessageHandler.handle_command(command) end)
 
         List.last(messages)["update_id"]
       _ ->
@@ -30,6 +34,13 @@ defmodule Feeder.Telegram.Fetcher do
     {:reply, messages, new_last_id}
   end
 
+  def handle_cast({:send, message}, last_id) do
+    Feeder.Telegram.TelegramService.send_message(message)
+
+    {:noreply, last_id}
+  end
+
+  # private
   defp is_command(message_wrapper) do
     case text = message_wrapper["message"]["text"] do
       nil ->
