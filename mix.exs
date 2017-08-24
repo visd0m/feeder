@@ -34,7 +34,8 @@ defmodule Feeder.Mixfile do
       {:poison, "~> 3.1"},
       {:quantum, ">= 2.1.0-beta.1"},
       {:timex, "~> 3.0"},
-      {:ecto, "~> 2.0"}
+      {:ecto, "~> 2.0"},
+      {:amnesia, "~> 0.2.7"}
     ]
   end
 end
