@@ -11,7 +11,8 @@ config :logger, :error_log,
 
   config :feeder, Feeder.Scheduler,
     jobs: [
-        {{:extended, "* * * * *"}, {Feeder.Telegram.Fetcher, :fetch_messages, []}}
+        {{:extended, "* * * * *"}, {Feeder.Telegram.Bot, :fetch_messages, []}},
+        {{:extended, "* * * * *"}, {Feeder.Rss.Fetcher, :load_subscriptions, []}}
     ]
 
   config :feeder,

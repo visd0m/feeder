@@ -1,4 +1,4 @@
-defmodule Feeder.Telegram.Fetcher do
+defmodule Feeder.Telegram.Bot do
   require Logger
   use GenServer
 
