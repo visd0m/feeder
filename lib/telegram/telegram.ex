@@ -7,6 +7,7 @@ defmodule FeederBot.Telegram do
   # get_updates
   @get_updates_path "getUpdates"
   @offset_query_param "offset"
+  @tiemout_query_param "timeout"
 
   # send_message
   @send_message_path "sendMessage"
@@ -22,11 +23,14 @@ defmodule FeederBot.Telegram do
       nil ->
         []
       offset ->
-        [{@offset_query_param, offset + 1}]
+        [
+          {@tiemout_query_param, 20},
+          {@offset_query_param, offset + 1}
+        ]
     end
 
     Poison.decode!(
-      exec_req(url, fn() -> HTTPoison.get!(url, [], [{:params, options}]) end)
+      exec_req(url, fn() -> HTTPoison.get!(url, [], [{:params, options}, {:recv_timeout, 25000}]) end)
     )["result"]
   end
 

@@ -10,6 +10,7 @@ config :logger, :error_log,
   level: :debug
 
   config :feeder_bot, FeederBot.Scheduler,
+    overlap: false,
     jobs: [
         {{:extended, "* * * * *"}, {FeederBot.Telegram.Bot, :fetch, []}},
         {"* * * * *", {FeederBot.Rss.Fetcher, :load_subscriptions, []}}

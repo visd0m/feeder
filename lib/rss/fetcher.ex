@@ -5,38 +5,58 @@ defmodule FeederBot.Rss.Fetcher do
   import FeederBot.Persistence.DatabaseHandler
   import FeederBot.Telegram
 
-  def load_subscriptions do
-    subscriptions = exec_operation(fn ->
-      Subscription.where(:id > 0)
-        |> Amnesia.Selection.values
-    end)
-    Logger.info("actual subscriptions: #{inspect(subscriptions)}")
-
-    feeds_by_users = subscriptions
-      |> Enum.map(fn (subscription) ->
-        {subscription, extract_feed(subscription)}
-      end)
-
-    feeds_by_users
-      |> Enum.each(fn({subscription, feed}) ->
-        send_updates({subscription, feed})
-        update_subscription({subscription, feed})
-      end)
+  # public
+  def start_link() do
+    GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
-  defp extract_feed(subscription) do
-    filtering_date = case subscription.last_update do
-      nil -> -1
-      a_date -> a_date
+  def fetch_subscription(subscription) do
+    GenServer.cast(__MODULE__, {:fetch, subscription})
+  end
+
+  def load_subscriptions do
+    subscriptions = exec_operation(fn ->
+      Subscription.where(enabled == true)
+        |> Amnesia.Selection.values
+    end)
+
+    subscriptions
+      |> Enum.each(fn(subscription) -> fetch_subscription(subscription) end)
+  end
+
+  def check_subscription(url) do
+    case HTTPoison.get(url) do
+      {:ok, response} ->
+        try do
+          {:ok, ElixirFeedParser.parse(response.body)}
+        catch
+          _ ->
+            {:error, "invalid url"}
+        end
+      {:error, _} ->
+        {:error, "invalid url"}
     end
+  end
+
+  # callbacks
+  def init(_) do
+    {:ok, nil}
+  end
+
+  def handle_cast({:fetch, subscription}, _) do
+    feed = extract_feed(subscription)
+    send_updates({subscription, feed})
+    update_subscription({subscription, feed})
+
+    {:noreply, nil}
+  end
+
+  # private
+  defp extract_feed(subscription) do
     ElixirFeedParser.parse(HTTPoison.get!(subscription.url).body).entries
       |> Enum.filter(fn(feed) ->
-         Logger.info("feed_entry: #{inspect(feed)}")
-         Logger.info("filtering_date: #{inspect(filtering_date)}")
          feed_date = extract_timestamp(feed.updated)
-         Logger.info("feed_date: #{inspect(feed_date)}")
-
-         filtering_date < feed_date
+         subscription.last_update < feed_date
       end)
   end
 
@@ -48,20 +68,6 @@ defmodule FeederBot.Rss.Fetcher do
         {:ok, date_time} = date
           |> Timex.parse("{RFC1123}")
         DateTime.to_unix(date_time)
-    end
-  end
-
-  def check_subscription(url) do
-    case HTTPoison.get(url) do
-      {:ok, response} ->
-        try do
-          ElixirFeedParser.parse(response.body)
-          true
-        catch
-          _ -> false
-        end
-      {:error, _} ->
-        false
     end
   end
 

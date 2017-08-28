@@ -9,7 +9,7 @@ defmodule FeederBot.Telegram.Bot do
   end
 
   def fetch() do
-    GenServer.call(__MODULE__, :fetch)
+    GenServer.call(__MODULE__, :fetch, 25000)
   end
 
   def send(message) do

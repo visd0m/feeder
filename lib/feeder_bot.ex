@@ -1,4 +1,6 @@
 defmodule FeederBot do
+  import FeederBot.Persistence.DatabaseHandler
+  use FeederBot.Persistence.Database
   use Application
   require Logger
 
@@ -8,7 +10,8 @@ defmodule FeederBot do
 
     children = [
       worker(FeederBot.Scheduler, []),
-      worker(FeederBot.Telegram.Bot, [])
+      worker(FeederBot.Telegram.Bot, []),
+      worker(FeederBot.Rss.Fetcher, [])
     ]
     opts = [strategy: :one_for_one, name: FeederBot.Supervisor]
     Supervisor.start_link(children, opts)
@@ -18,5 +21,12 @@ defmodule FeederBot do
     Logger.info("stopping feeder ☠️")
 
     Supervisor.stop(FeederBot.Supervisor)
+  end
+
+  def list_subscription() do
+    exec_operation(fn() ->
+      Subscription.where(id > 0)
+        |> Amnesia.Selection.values
+    end)
   end
 end
