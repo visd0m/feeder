@@ -1,4 +1,4 @@
-defmodule Feeder do
+defmodule FeederBot do
   use Application
   require Logger
 
@@ -7,16 +7,16 @@ defmodule Feeder do
     Logger.info("starting feeder 🤖")
 
     children = [
-      worker(Feeder.Scheduler, []),
-      worker(Feeder.Telegram.Bot, [])
+      worker(FeederBot.Scheduler, []),
+      worker(FeederBot.Telegram.Bot, [])
     ]
-    opts = [strategy: :one_for_one, name: Feeder.Supervisor]
+    opts = [strategy: :one_for_one, name: FeederBot.Supervisor]
     Supervisor.start_link(children, opts)
   end
 
   def stop(_type) do
     Logger.info("stopping feeder ☠️")
 
-    Supervisor.stop(Feeder.Supervisor)
+    Supervisor.stop(FeederBot.Supervisor)
   end
 end

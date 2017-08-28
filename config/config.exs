@@ -9,13 +9,13 @@ config :logger, :error_log,
   path: "log/app.log",
   level: :debug
 
-  config :feeder, Feeder.Scheduler,
+  config :feeder_bot, FeederBot.Scheduler,
     jobs: [
-        {{:extended, "* * * * *"}, {Feeder.Telegram.Bot, :fetch_messages, []}},
-        {{:extended, "* * * * *"}, {Feeder.Rss.Fetcher, :load_subscriptions, []}}
+        {{:extended, "* * * * *"}, {FeederBot.Telegram.Bot, :fetch, []}},
+        {"* * * * *", {FeederBot.Rss.Fetcher, :load_subscriptions, []}}
     ]
 
-  config :feeder,
+  config :feeder_bot,
     token_file: Path.expand("token.txt", __DIR__)
 
 # This configuration is loaded before any dependency and is restricted

@@ -1,4 +1,4 @@
-defmodule Feeder.Persistence.DatabaseHandler do
+defmodule FeederBot.Persistence.DatabaseHandler do
   use GenServer
   require Amnesia
   require Amnesia.Helper

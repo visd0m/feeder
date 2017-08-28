@@ -1,8 +1,8 @@
-defmodule Feeder.Mixfile do
+defmodule FeederBot.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :feeder,
+    [app: :feeder_bot,
      version: "0.1.0",
      elixir: "~> 1.4",
      build_embedded: Mix.env == :prod,
@@ -15,7 +15,7 @@ defmodule Feeder.Mixfile do
   # Type "mix help compile.app" for more information
   def application do
     # Specify extra applications you'll use from Erlang/Elixir
-    [extra_applications: [:logger, :logger_file_backend, :httpoison]]
+    [extra_applications: [:logger, :logger_file_backend, :httpoison, :elixir_feed_parser]]
   end
 
   # Dependencies can be Hex packages:
@@ -33,8 +33,9 @@ defmodule Feeder.Mixfile do
       {:logger_file_backend, "~> 0.0.7"},
       {:poison, "~> 3.1"},
       {:quantum, ">= 2.1.0-beta.1"},
-      {:timex, "~> 3.0"},
-      {:amnesia, "~> 0.2.7"}
+      {:amnesia, "~> 0.2.7"},
+      {:elixir_feed_parser, "~> 0.0.1"},
+      {:timex, "~> 3.1"}
     ]
   end
 end

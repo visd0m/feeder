@@ -1,16 +1,18 @@
-defmodule Feeder.Telegram.Bot do
+defmodule FeederBot.Telegram.Bot do
   require Logger
   use GenServer
+  import FeederBot.Telegram
+  import FeederBot.Telegram.MessageHandler
 
   def start_link() do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
-  def fetch_messages() do
+  def fetch() do
     GenServer.call(__MODULE__, :fetch)
   end
 
-  def send_message(message) do
+  def send(message) do
     GenServer.cast(__MODULE__, {:send, message})
   end
 
@@ -20,11 +22,11 @@ defmodule Feeder.Telegram.Bot do
   end
 
   def handle_call(:fetch, _from, last_id) do
-    new_last_id = case messages = Feeder.Telegram.TelegramService.fetch_messages(last_id) do
+    new_last_id = case messages = fetch_messages(last_id) do
       [_ | _] ->
         messages
           |> Enum.filter(fn(message_wrapper) -> is_command(message_wrapper) end)
-          |> Enum.each(fn(command) -> Feeder.Telegram.MessageHandler.handle_command(command) end)
+          |> Enum.each(fn(command) -> handle_command(command) end)
 
         List.last(messages)["update_id"]
       _ ->
@@ -35,7 +37,7 @@ defmodule Feeder.Telegram.Bot do
   end
 
   def handle_cast({:send, message}, last_id) do
-    Feeder.Telegram.TelegramService.send_message(message)
+    send_message(message)
 
     {:noreply, last_id}
   end
