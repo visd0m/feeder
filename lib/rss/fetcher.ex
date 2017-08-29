@@ -27,14 +27,22 @@ defmodule FeederBot.Rss.Fetcher do
   def check_subscription(url) do
     case HTTPoison.get(url) do
       {:ok, response} ->
-        try do
-          {:ok, ElixirFeedParser.parse(response.body)}
-        catch
-          _ ->
-            {:error, "invalid url"}
-        end
+        feed = response.body
+          |> ElixirFeedParser.parse
+          |> check_rss
       {:error, _} ->
         {:error, "invalid url"}
+    end
+  end
+
+  defp check_rss(feed) do
+    case feed do
+      nil ->
+        {:error, "invalid url"}
+      _ ->
+        last_item = feed.entries
+          |> List.first
+        extract_timestamp(last_item.updated)
     end
   end
 
@@ -55,19 +63,22 @@ defmodule FeederBot.Rss.Fetcher do
   defp extract_feed(subscription) do
     ElixirFeedParser.parse(HTTPoison.get!(subscription.url).body).entries
       |> Enum.filter(fn(feed) ->
-         feed_date = extract_timestamp(feed.updated)
+         {:ok, feed_date} = extract_timestamp(feed.updated)
          subscription.last_update < feed_date
       end)
   end
 
-  defp extract_timestamp(date) do
+  def extract_timestamp(date) do
     case date do
       nil ->
-        -1
+        {:ok, -1}
       _ ->
-        {:ok, date_time} = date
-          |> Timex.parse("{RFC1123}")
-        DateTime.to_unix(date_time)
+        case date |> Timex.parse("{RFC1123}") do
+          {:ok, date_time} ->
+            {:ok, DateTime.to_unix(date_time)}
+          {:error, _} ->
+            {:error, "date can not be parsed using RFC1123"}
+        end
     end
   end
 
@@ -79,8 +90,9 @@ defmodule FeederBot.Rss.Fetcher do
   defp update_subscription({subscription, feed_entries}) do
     case feed_entries do
       [_ | _] ->
+        {:ok, feed_date} = extract_timestamp(List.first(feed_entries).updated)
         exec_operation(fn ->
-          %Subscription{subscription | last_update: extract_timestamp(List.first(feed_entries).updated)}
+          %Subscription{subscription | last_update: feed_date}
             |> Subscription.write
         end)
         :ok

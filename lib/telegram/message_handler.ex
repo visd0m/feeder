@@ -12,8 +12,8 @@ defmodule FeederBot.Telegram.MessageHandler do
 
   defp exec_command({"/subscribe " <> url, command}) do
     case check_subscription(url) do
-      {:ok, feed} ->
-        persist_subscription(command, url, feed)
+      {:ok, timestamp} ->
+        persist_subscription(command, url, timestamp)
         send_message({
           command["message"]["from"]["id"],
           "subscription confirmed to '#{url}' ✌️"
@@ -36,7 +36,7 @@ defmodule FeederBot.Telegram.MessageHandler do
 
     send_message({
       command["message"]["from"]["id"],
-      "correctly unsubscribed from, '#{url}' run away from the spam 🏃"
+      "correctly unsubscribed from, '#{url}'"
     })
   end
 
@@ -91,20 +91,14 @@ defmodule FeederBot.Telegram.MessageHandler do
     })
   end
 
-  defp persist_subscription(command, url, feed) do
-    last_id = case feed.entries do
-      [_ | _] ->
-        List.first(feed).updated
-      _ ->
-        -1
-    end
+  defp persist_subscription(command, url, timestamp) do
     exec_operation(fn ->
       %Subscription{
         user_id: command["message"]["from"]["id"],
         chat_id: command["message"]["chat"]["id"],
         url: url,
         enabled: true,
-        last_update: last_id
+        last_update: timestamp
       } |> Subscription.write
     end)
   end
