@@ -9,9 +9,9 @@ defmodule FeederBot do
     Logger.info("starting feeder 🤖")
 
     children = [
-      worker(FeederBot.Scheduler, []),
       worker(FeederBot.Telegram.Bot, []),
-      worker(FeederBot.Rss.Fetcher, [])
+      worker(FeederBot.Rss.Fetcher, []),
+      worker(FeederBot.Scheduler, [])
     ]
     opts = [strategy: :one_for_one, name: FeederBot.Supervisor]
     Supervisor.start_link(children, opts)

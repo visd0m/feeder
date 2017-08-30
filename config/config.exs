@@ -9,15 +9,16 @@ config :logger, :error_log,
   path: "log/app.log",
   level: :debug
 
-  config :feeder_bot, FeederBot.Scheduler,
-    overlap: false,
-    jobs: [
-        {{:extended, "* * * * *"}, {FeederBot.Telegram.Bot, :fetch, []}},
-        {"*/1 * * * *", {FeederBot.Rss.Fetcher, :load_subscriptions, []}}
-    ]
+config :feeder_bot, FeederBot.Scheduler,
+  overlap: false,
+  timezone: :utc,
+  jobs: [
+      {{:extended, "* * * * *"}, {FeederBot.Telegram.Bot, :fetch, []}},
+      {{:cron, "* * * * *"}, {FeederBot.Rss.Fetcher, :load_subscriptions, []}}
+  ]
 
-  config :feeder_bot,
-    token_file: Path.expand("token.txt", __DIR__)
+config :feeder_bot,
+  token_file: Path.expand("token.txt", __DIR__)
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this
