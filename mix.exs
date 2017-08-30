@@ -39,7 +39,7 @@ defmodule FeederBot.Mixfile do
       {:httpoison, "~> 0.12"},
       {:logger_file_backend, "~> 0.0.7"},
       {:poison, "~> 3.1"},
-      {:quantum, ">= 2.1.0-beta.1"},
+      {:quantum, "~> 2.0.3"},
       {:amnesia, "~> 0.2.7"},
       {:elixir_feed_parser, "~> 0.0.1"},
       {:timex, "~> 3.1"}
