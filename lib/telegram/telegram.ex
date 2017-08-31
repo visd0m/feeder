@@ -2,7 +2,7 @@ defmodule FeederBot.Telegram do
   require Logger
 
   @base_url "https://api.telegram.org"
-  @bot_id File.read!(Application.get_env(:feeder_bot, :token_file))
+  @bot_id Application.get_env(:feeder_bot, :telegram_token)
 
   # get_updates
   @get_updates_path "getUpdates"

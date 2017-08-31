@@ -11,14 +11,13 @@ config :logger, :error_log,
 
 config :feeder_bot, FeederBot.Scheduler,
   overlap: false,
-  timezone: :utc,
   jobs: [
       {{:extended, "* * * * *"}, {FeederBot.Telegram.Bot, :fetch, []}},
       {{:cron, "* * * * *"}, {FeederBot.Rss.Fetcher, :load_subscriptions, []}}
   ]
 
 config :feeder_bot,
-  token_file: Path.expand("token.txt", __DIR__)
+  telegram_token: System.get_env("TELEGRAM_TOKEN")
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this
