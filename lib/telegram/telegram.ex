@@ -29,9 +29,15 @@ defmodule FeederBot.Telegram do
         ]
     end
 
-    Poison.decode!(
-      exec_req(url, fn() -> HTTPoison.get!(url, [], [{:params, options}, {:recv_timeout, 25000}]) end)
-    )["result"]
+    Logger.info("[REQ] ==> #{url}")
+    case HTTPoison.get(url, [], [{:params, options}, {:recv_timeout, 25000}]) do
+      {:ok, response} ->
+        body = response.body
+        Logger.info("[RES] ==> #{body}")
+        Poison.decode!(body)["result"]
+      {:error, _} ->
+        []
+    end
   end
 
   # send message
@@ -43,13 +49,14 @@ defmodule FeederBot.Telegram do
       {@text_query_param, text}
     ]
 
-    Poison.decode!(exec_req(url, fn() -> HTTPoison.get!(url, [], [{:params, options}]) end))
-  end
-
-  defp exec_req(url, req) do
     Logger.info("[REQ] ==> #{url}")
-    body = req.().body
-    Logger.info("[RES] <== #{body}")
-    body
+    case HTTPoison.get(url, [], [{:params, options}]) do
+      {:ok, response} ->
+        body = response.body
+        Logger.info("[RES] ==> #{body}")
+        Poison.decode!(body)["result"]
+      {:error, _} ->
+        []
+    end
   end
 end

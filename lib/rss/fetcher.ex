@@ -61,11 +61,16 @@ defmodule FeederBot.Rss.Fetcher do
 
   # private
   defp extract_feed(subscription) do
-    ElixirFeedParser.parse(HTTPoison.get!(subscription.url).body).entries
-      |> Enum.filter(fn(feed) ->
-         {:ok, feed_date} = extract_timestamp(feed.updated)
-         subscription.last_update < feed_date
-      end)
+    case HTTPoison.get(subscription.url) do
+      {:ok, response} ->
+        ElixirFeedParser.parse(response.body).entries
+        |> Enum.filter(fn(feed) ->
+           {:ok, feed_date} = extract_timestamp(feed.updated)
+           subscription.last_update < feed_date
+         end)
+      {:error, _} ->
+        []
+    end
   end
 
   def extract_timestamp(date) do
