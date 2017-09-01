@@ -71,6 +71,7 @@ defmodule FeederBot.Telegram.MessageHandler do
 
     subscriptions = exec_operation(fn() ->
       Subscription.where(user_id == command["message"]["from"]["id"] and enabled == true)
+        |> Amnesia.Selection.values
     end)
 
     subscriptions
