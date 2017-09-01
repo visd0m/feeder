@@ -35,7 +35,7 @@ defmodule FeederBot.Rss.Fetcher do
           {:error, "invalid url"}
       end
     rescue
-      e in ArgumentError ->
+      e ->
         {:error, "invalid url"}
     end
   end
