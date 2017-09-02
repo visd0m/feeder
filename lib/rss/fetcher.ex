@@ -24,20 +24,19 @@ defmodule FeederBot.Rss.Fetcher do
       |> Enum.each(fn(subscription) -> fetch_subscription(subscription) end)
   end
 
-  def check_subscription(url) do
-    try do
-      case HTTPoison.get(url) do
-        {:ok, response} ->
-          feed = response.body
-            |> ElixirFeedParser.parse
-            |> check_rss
-        {:error, _} ->
-          {:error, "invalid url"}
-      end
-    rescue
-      e ->
+  def check_subscription(url = "http" <> _) do
+    case HTTPoison.get(url) do
+      {:ok, response} ->
+        feed = response.body
+          |> ElixirFeedParser.parse
+          |> check_rss
+      {:error, _} ->
         {:error, "invalid url"}
     end
+  end
+
+  def check_subscription(_) do
+    {:error, "invalid url"}
   end
 
   defp check_rss(feed) do
