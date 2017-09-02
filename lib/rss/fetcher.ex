@@ -51,14 +51,14 @@ defmodule FeederBot.Rss.Fetcher do
   end
 
   # private
-  defp check_feed(body = "" <> _) do
+  defp check_feed("") do
+    error()
+  end
+
+  defp check_feed(body) do
     feed = body
       |> ElixirFeedParser.parse
       |> check_rss
-  end
-
-  defp check_feed(_) do
-    error()
   end
 
   defp check_rss(feed) do
