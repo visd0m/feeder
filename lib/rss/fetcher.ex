@@ -31,7 +31,7 @@ defmodule FeederBot.Rss.Fetcher do
           feed = response.body
             |> ElixirFeedParser.parse
             |> check_rss
-        catch
+        rescue
           e ->
             {:error, "invalid url"}
         end
