@@ -27,32 +27,14 @@ defmodule FeederBot.Rss.Fetcher do
   def check_subscription(url = "http" <> _) do
     case HTTPoison.get(url) do
       {:ok, response} ->
-        try do
-          feed = response.body
-            |> ElixirFeedParser.parse
-            |> check_rss
-        catch
-          :exit, code ->
-            {:error, "invalid url"}
-        end
+        check_feed(response.body)
       {:error, _} ->
-        {:error, "invalid url"}
+        error()
     end
   end
 
   def check_subscription(_) do
-    {:error, "invalid url"}
-  end
-
-  defp check_rss(feed) do
-    case feed do
-      nil ->
-        {:error, "invalid url"}
-      _ ->
-        last_item = feed.entries
-          |> List.first
-        extract_timestamp(last_item.updated)
-    end
+    error()
   end
 
   # callbacks
@@ -69,6 +51,31 @@ defmodule FeederBot.Rss.Fetcher do
   end
 
   # private
+  defp check_feed(body = "" <> _) do
+    feed = body
+      |> ElixirFeedParser.parse
+      |> check_rss
+  end
+
+  defp check_feed(_) do
+    error()
+  end
+
+  defp check_rss(feed) do
+    case feed do
+      nil ->
+        error()
+      _ ->
+        last_item = feed.entries
+          |> List.first
+        extract_timestamp(last_item.updated)
+    end
+  end
+
+  defp error do
+    {:error, "invalid url"}
+  end
+
   defp extract_feed(subscription) do
     case HTTPoison.get(subscription.url) do
       {:ok, response} ->
