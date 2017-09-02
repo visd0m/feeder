@@ -4,9 +4,6 @@ defmodule FeederBot.Telegram.MessageHandler do
   import FeederBot.Persistence.DatabaseHandler
   import FeederBot.Telegram
   import FeederBot.Rss.Fetcher
-  require Exceptional
-  use Exceptional
-  import Exceptional
 
   def handle_command(command) do
     {command["message"]["text"], command}
@@ -14,21 +11,19 @@ defmodule FeederBot.Telegram.MessageHandler do
   end
 
   defp exec_command({"/subscribe " <> url, command}) do
-    safe(fn () ->
-      case check_subscription(url) do
-        {:ok, timestamp} ->
-          persist_subscription(command, url, timestamp)
-          send_message({
-            command["message"]["from"]["id"],
-            "subscription confirmed to '#{url}' ✌️"
-          })
-        {:error, _} ->
-          send_message({
-            command["message"]["from"]["id"],
-            "😱 invalid url provided, '#{url}'"
-          })
-      end
-    end).()
+    case check_subscription(url) do
+      {:ok, timestamp} ->
+        persist_subscription(command, url, timestamp)
+        send_message({
+          command["message"]["from"]["id"],
+          "subscription confirmed to '#{url}' ✌️"
+        })
+      {:error, _} ->
+        send_message({
+          command["message"]["from"]["id"],
+          "😱 invalid url provided, '#{url}'"
+        })
+    end
   end
 
   defp exec_command({"/unsubscribe " <> url, command}) do

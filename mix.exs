@@ -42,8 +42,7 @@ defmodule FeederBot.Mixfile do
       {:quantum, ">= 2.1.0-beta.1"},
       {:amnesia, "~> 0.2.7"},
       {:elixir_feed_parser, "~> 0.0.1"},
-      {:timex, "~> 3.1"},
-      {:exceptional, "~> 2.0"}
+      {:timex, "~> 3.1"}
     ]
   end
 end
