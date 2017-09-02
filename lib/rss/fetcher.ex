@@ -27,9 +27,14 @@ defmodule FeederBot.Rss.Fetcher do
   def check_subscription(url = "http" <> _) do
     case HTTPoison.get(url) do
       {:ok, response} ->
-        feed = response.body
-          |> ElixirFeedParser.parse
-          |> check_rss
+        try do
+          feed = response.body
+            |> ElixirFeedParser.parse
+            |> check_rss
+        rescue
+          e ->
+            {:error, "invalid url"}
+        end
       {:error, _} ->
         {:error, "invalid url"}
     end
