@@ -2,7 +2,7 @@ defmodule FeederBot.Telegram.Bot do
   require Logger
   use GenServer
   import FeederBot.Telegram
-  import FeederBot.Telegram.MessageHandler
+  import FeederBot.Telegram.CommandHandler
 
   def start_link() do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
@@ -26,7 +26,9 @@ defmodule FeederBot.Telegram.Bot do
       [_ | _] ->
         messages
           |> Enum.filter(fn(message_wrapper) -> is_command(message_wrapper) end)
-          |> Enum.each(fn(command) -> handle_command(command) end)
+          |> Enum.map(fn(command) -> handle_command(command) end)
+          |> Enum.map(fn(handler) -> handler.() end)
+          |> Enum.each(fn({_, message}) -> send(message) end)
 
         List.last(messages)["update_id"]
       _ ->

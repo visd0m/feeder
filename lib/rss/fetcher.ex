@@ -2,10 +2,11 @@ defmodule FeederBot.Rss.Fetcher do
   use GenServer
   use FeederBot.Persistence.Database
   require Logger
-  import FeederBot.Persistence.DatabaseHandler
-  import FeederBot.Telegram
+  import FeederBot.Persistence.SubscriptionDao
+  import FeederBot.Telegram.Bot
+  import FeederBot.Date
 
-  # public
+  # ======== public
   def start_link() do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
   end
@@ -15,29 +16,13 @@ defmodule FeederBot.Rss.Fetcher do
   end
 
   def load_subscriptions do
-    subscriptions = exec_operation(fn ->
-      Subscription.where(enabled == true)
-        |> Amnesia.Selection.values
-    end)
+    subscriptions = load_enabled()
 
     subscriptions
       |> Enum.each(fn(subscription) -> fetch_subscription(subscription) end)
   end
 
-  def check_subscription(url = "http" <> _) do
-    case HTTPoison.get(url) do
-      {:ok, response} ->
-        check_feed(response.body)
-      {:error, _} ->
-        error()
-    end
-  end
-
-  def check_subscription(_) do
-    error()
-  end
-
-  # callbacks
+  # ======== callbacks
   def init(_) do
     {:ok, nil}
   end
@@ -50,32 +35,7 @@ defmodule FeederBot.Rss.Fetcher do
     {:noreply, nil}
   end
 
-  # private
-  defp check_feed("") do
-    error()
-  end
-
-  defp check_feed(body) do
-    feed = body
-      |> ElixirFeedParser.parse
-      |> check_rss
-  end
-
-  defp check_rss(feed) do
-    case feed do
-      nil ->
-        error()
-      _ ->
-        last_item = feed.entries
-          |> List.first
-        extract_timestamp(last_item.updated)
-    end
-  end
-
-  defp error do
-    {:error, "invalid url"}
-  end
-
+  # ======== private
   defp extract_feed(subscription) do
     case HTTPoison.get(subscription.url) do
       {:ok, response} ->
@@ -89,33 +49,20 @@ defmodule FeederBot.Rss.Fetcher do
     end
   end
 
-  def extract_timestamp(date) do
-    case date do
-      nil ->
-        {:ok, -1}
-      _ ->
-        case date |> Timex.parse("{RFC1123}") do
-          {:ok, date_time} ->
-            {:ok, DateTime.to_unix(date_time)}
-          {:error, _} ->
-            {:error, "date can not be parsed using RFC1123"}
-        end
-    end
-  end
-
   defp send_updates({subscription, feed_entries}) do
     feed_entries
-      |> Enum.each(fn(entry) -> send_message({subscription.user_id, entry.url}) end)
+      |> Enum.each(fn(entry) -> send({
+          subscription.chat_id,
+          "#{subscription.tag}\n\n#{entry.title}\n\n#{entry.url}"
+        })
+      end)
   end
 
   defp update_subscription({subscription, feed_entries}) do
     case feed_entries do
       [_ | _] ->
         {:ok, feed_date} = extract_timestamp(List.first(feed_entries).updated)
-        exec_operation(fn ->
-          %Subscription{subscription | last_update: feed_date}
-            |> Subscription.write
-        end)
+        update(%Subscription{subscription | last_update: feed_date})
         :ok
         _ -> :ok
     end

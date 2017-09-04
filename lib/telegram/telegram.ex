@@ -12,10 +12,10 @@ defmodule FeederBot.Telegram do
   # send_message
   @send_message_path "sendMessage"
   @chat_id_query_param "chat_id"
+  @disable_preview_query_param "disable_web_page_preview"
   @text_query_param "text"
 
   # fetch messages
-  @spec fetch_messages(String.t) :: Feeder.Telegram.Model.MessageWrapper
   def fetch_messages(last_id) do
     url = "#{@base_url}/#{@bot_id}/#{@get_updates_path}"
 
@@ -29,8 +29,24 @@ defmodule FeederBot.Telegram do
         ]
     end
 
-    Logger.info("[REQ] ==> #{url}")
-    case HTTPoison.get(url, [], [{:params, options}, {:recv_timeout, 25000}]) do
+    get(url, options, 25000)
+  end
+
+  # send message
+  def send_message({chat_id, text}) do
+    url = "#{@base_url}/#{@bot_id}/#{@send_message_path}"
+
+    options = [
+      {@chat_id_query_param, chat_id},
+      {@text_query_param, text},
+      {@disable_preview_query_param, true}
+    ]
+
+    get(url, options)
+  end
+
+  defp get(url, query_params, time_out \\ nil) do
+    case get_request(url, query_params, time_out).() do
       {:ok, response} ->
         body = response.body
         Logger.info("[RES] ==> #{body}")
@@ -40,23 +56,17 @@ defmodule FeederBot.Telegram do
     end
   end
 
-  # send message
-  def send_message({chat_id, text}) do
-    url = "#{@base_url}/#{@bot_id}/#{@send_message_path}"
+  defp get_request(url, query_params, nil) do
+    fn ->
+      Logger.info("[REQ] ==> #{url}")
+      HTTPoison.get(url, [], [{:params, query_params}])
+    end
+  end
 
-    options = [
-      {@chat_id_query_param, chat_id},
-      {@text_query_param, text}
-    ]
-
-    Logger.info("[REQ] ==> #{url}")
-    case HTTPoison.get(url, [], [{:params, options}]) do
-      {:ok, response} ->
-        body = response.body
-        Logger.info("[RES] ==> #{body}")
-        Poison.decode!(body)["result"]
-      {:error, _} ->
-        []
+  defp get_request(url, query_params, timeout) do
+    fn ->
+      Logger.info("[REQ] ==> #{url}")
+      HTTPoison.get(url, [], [{:params, query_params}, {:recv_timeout, timeout}])
     end
   end
 end

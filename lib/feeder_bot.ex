@@ -1,8 +1,8 @@
 defmodule FeederBot do
-  import FeederBot.Persistence.DatabaseHandler
   use FeederBot.Persistence.Database
   use Application
   require Logger
+  import FeederBot.Persistence.SubscriptionDao
 
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
@@ -24,9 +24,6 @@ defmodule FeederBot do
   end
 
   def list_subscription() do
-    exec_operation(fn() ->
-      Subscription.where(id > 0)
-        |> Amnesia.Selection.values
-    end)
+    load_all()
   end
 end
