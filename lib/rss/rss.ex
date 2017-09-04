@@ -28,6 +28,8 @@ defmodule FeederBot.Rss do
     case feed do
       nil ->
         error()
+      {:error, _} ->
+        error()
       _ ->
         last_item = feed.entries
           |> List.first
