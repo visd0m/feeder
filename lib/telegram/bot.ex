@@ -12,10 +12,6 @@ defmodule FeederBot.Telegram.Bot do
     GenServer.call(__MODULE__, :fetch, 25000)
   end
 
-  def send(message) do
-    GenServer.cast(__MODULE__, {:send, message})
-  end
-
   # callbacks
   def init(_) do
     {:ok, nil}
@@ -31,7 +27,7 @@ defmodule FeederBot.Telegram.Bot do
             |> Enum.filter(fn(message_wrapper) -> is_command(message_wrapper) end)
             |> Enum.map(fn(command) -> handle_command(command) end)
             |> Enum.map(fn(handler) -> handler.() end)
-            |> Enum.each(fn({_, message}) -> send(message) end)
+            |> Enum.each(fn({_, message}) -> send_message(message) end)
         end)
 
         new_state
@@ -44,12 +40,6 @@ defmodule FeederBot.Telegram.Bot do
 
   def handle_info(_, state) do
     {:noreply, state}
-  end
-
-  def handle_cast({:send, message}, last_id) do
-    send_message(message)
-
-    {:noreply, last_id}
   end
 
   # private

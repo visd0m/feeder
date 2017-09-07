@@ -2,7 +2,7 @@ defmodule FeederBot.Rss.Fetcher do
   use FeederBot.Persistence.Database
   require Logger
   import FeederBot.Persistence.SubscriptionDao
-  import FeederBot.Telegram.Bot
+  import FeederBot.Telegram
   import FeederBot.Date
 
   # ======== public
@@ -39,7 +39,7 @@ defmodule FeederBot.Rss.Fetcher do
 
   defp send_updates({subscription, feed_entries}) do
     feed_entries
-      |> Enum.each(fn(entry) -> send({
+      |> Enum.each(fn(entry) -> send_message({
           subscription.chat_id,
           "#{subscription.tag}\n\n#{entry.title}\n\n#{entry.url}"
         })
