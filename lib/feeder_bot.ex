@@ -10,7 +10,6 @@ defmodule FeederBot do
 
     children = [
       worker(FeederBot.Telegram.Bot, []),
-      worker(FeederBot.Rss.Fetcher, []),
       worker(FeederBot.Scheduler, []),
       {Task.Supervisor, name: FeederBot.TaskSupervisor}
     ]

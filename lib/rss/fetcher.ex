@@ -1,5 +1,4 @@
 defmodule FeederBot.Rss.Fetcher do
-  use GenServer
   use FeederBot.Persistence.Database
   require Logger
   import FeederBot.Persistence.SubscriptionDao
@@ -7,35 +6,24 @@ defmodule FeederBot.Rss.Fetcher do
   import FeederBot.Date
 
   # ======== public
-  def start_link() do
-    GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
-  end
-
-  def fetch_subscription(subscription) do
-    GenServer.cast(__MODULE__, {:fetch, subscription})
-  end
-
   def load_subscriptions do
     subscriptions = load_enabled()
 
     subscriptions
-      |> Enum.each(fn(subscription) -> fetch_subscription(subscription) end)
-  end
-
-  # ======== callbacks
-  def init(_) do
-    {:ok, nil}
-  end
-
-  def handle_cast({:fetch, subscription}, _) do
-    feed = extract_feed(subscription)
-    send_updates({subscription, feed})
-    update_subscription({subscription, feed})
-
-    {:noreply, nil}
+      |> Enum.each(fn(subscription) ->
+        Task.Supervisor.async_nolink(FeederBot.TaskSupervisor, fn ->
+          fetch_subscription(subscription)
+        end)
+      end)
   end
 
   # ======== private
+  defp fetch_subscription(subscription) do
+    feed = extract_feed(subscription)
+    send_updates({subscription, feed})
+    update_subscription({subscription, feed})
+  end
+
   defp extract_feed(subscription) do
     case HTTPoison.get(subscription.url) do
       {:ok, response} ->
