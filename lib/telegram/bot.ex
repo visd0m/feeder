@@ -24,18 +24,26 @@ defmodule FeederBot.Telegram.Bot do
   def handle_call(:fetch, _from, last_id) do
     new_last_id = case messages = fetch_messages(last_id) do
       [_ | _] ->
-        messages
-          |> Enum.filter(fn(message_wrapper) -> is_command(message_wrapper) end)
-          |> Enum.map(fn(command) -> handle_command(command) end)
-          |> Enum.map(fn(handler) -> handler.() end)
-          |> Enum.each(fn({_, message}) -> send(message) end)
+        new_state = List.last(messages)["update_id"]
 
-        List.last(messages)["update_id"]
+        Task.Supervisor.async_nolink(FeederBot.TaskSupervisor, fn ->
+          messages
+            |> Enum.filter(fn(message_wrapper) -> is_command(message_wrapper) end)
+            |> Enum.map(fn(command) -> handle_command(command) end)
+            |> Enum.map(fn(handler) -> handler.() end)
+            |> Enum.each(fn({_, message}) -> send(message) end)
+        end)
+
+        new_state
       _ ->
         nil
     end
 
     {:reply, messages, new_last_id}
+  end
+
+  def handle_info(_, state) do
+    {:noreply, state}
   end
 
   def handle_cast({:send, message}, last_id) do

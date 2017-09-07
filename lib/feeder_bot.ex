@@ -11,7 +11,8 @@ defmodule FeederBot do
     children = [
       worker(FeederBot.Telegram.Bot, []),
       worker(FeederBot.Rss.Fetcher, []),
-      worker(FeederBot.Scheduler, [])
+      worker(FeederBot.Scheduler, []),
+      {Task.Supervisor, name: FeederBot.TaskSupervisor}
     ]
     opts = [strategy: :one_for_one, name: FeederBot.Supervisor]
     Supervisor.start_link(children, opts)
