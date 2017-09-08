@@ -82,7 +82,8 @@ defmodule FeederBot.Telegram.Command do
     message = load_enabled_by_user_id(user_id)
       |> Enum.flat_map(fn(subscription) ->
         extract_feed(subscription, fn(feed) ->
-          String.contains?(feed.title, q)
+          String.contains?(feed.title, String.upcase(q)) or
+          String.contains?(feed.title, String.downcase(q))
         end)
       end)
       |> Enum.map(fn(item) -> "#{item.title}\n#{item.url}" end)
