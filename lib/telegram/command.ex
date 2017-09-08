@@ -24,12 +24,21 @@ defmodule FeederBot.Telegram.Command do
     end
   end
 
-  # ======== subscribe
-  defp get_handler({"/subscribe " <> url, user_id, chat_id}) do
-    random_tag = :crypto.strong_rand_bytes(10) |> Base.url_encode64 |> binary_part(0, 10)
+  # ======== subscribe (http://an_url.com:tag)
+  defp get_handler({"/subscribe " <> subscription, user_id, chat_id}) do
+    tokens = String.split(subscription, "::")
+
+    url = List.first(tokens)
+    tag = case tokens do
+      [_, user_tag] ->
+        user_tag
+      _ ->
+        :crypto.strong_rand_bytes(10) |> Base.url_encode64 |> binary_part(0, 10)
+    end
+
     with false <- is_already_subscribed(url, user_id)
     do
-      try_subscribe(url, random_tag, user_id, chat_id)
+      try_subscribe(url, tag, user_id, chat_id)
     else
       _ -> {:error, {chat_id, "already subscribed to url: '#{url}'"}}
     end
@@ -82,8 +91,7 @@ defmodule FeederBot.Telegram.Command do
     message = load_enabled_by_user_id(user_id)
       |> Enum.flat_map(fn(subscription) ->
         extract_feed(subscription, fn(feed) ->
-          String.contains?(feed.title, String.upcase(q)) or
-          String.contains?(feed.title, String.downcase(q))
+          String.contains?(String.downcase(feed.title), String.downcase(q))
         end)
       end)
       |> Enum.map(fn(item) -> "#{item.title}\n#{item.url}" end)
