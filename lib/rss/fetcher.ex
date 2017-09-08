@@ -17,24 +17,30 @@ defmodule FeederBot.Rss.Fetcher do
       end)
   end
 
-  # ======== private
-  defp fetch_subscription(subscription) do
-    feed = extract_feed(subscription)
-    send_updates({subscription, feed})
-    update_subscription({subscription, feed})
-  end
-
-  defp extract_feed(subscription) do
+  def extract_feed(subscription) do
     case HTTPoison.get(subscription.url) do
       {:ok, response} ->
         ElixirFeedParser.parse(response.body).entries
-        |> Enum.filter(fn(feed) ->
-           {:ok, feed_date} = extract_timestamp(feed.updated)
-           subscription.last_update < feed_date
-         end)
       {:error, _} ->
         []
     end
+  end
+
+  def extract_feed(subscription, filter_fn) do
+    extract_feed(subscription) |> Enum.filter(fn(feed) -> filter_fn.(feed) end)
+  end
+
+  # ======== private
+  defp fetch_subscription(subscription) do
+    feed = extract_feed(
+      subscription,
+      fn(feed) ->
+        {:ok, feed_date} = extract_timestamp(feed.updated)
+        subscription.last_update < feed_date
+      end
+    )
+    send_updates({subscription, feed})
+    update_subscription({subscription, feed})
   end
 
   defp send_updates({subscription, feed_entries}) do

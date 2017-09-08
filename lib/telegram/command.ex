@@ -1,10 +1,11 @@
-defmodule FeederBot.Telegram.CommandHandler do
+defmodule FeederBot.Telegram.Command do
   require Logger
-  import FeederBot.Rss
-  import FeederBot.Persistence.SubscriptionDao
   use FeederBot.Persistence.Database
+  import FeederBot.Rss
+  import FeederBot.Rss.Fetcher
+  import FeederBot.Persistence.SubscriptionDao
 
-  def handle_command(command) do
+  def get_command_handler(command) do
     parsed_command = {
       command["message"]["text"],
       command["message"]["from"]["id"],
@@ -12,6 +13,15 @@ defmodule FeederBot.Telegram.CommandHandler do
     }
 
     fn -> get_handler(parsed_command) end
+  end
+
+  def is_command(message_wrapper) do
+    case text = message_wrapper["message"]["text"] do
+      nil ->
+        false
+      _ ->
+        String.starts_with?(text, "/")
+    end
   end
 
   # ======== subscribe
@@ -65,6 +75,21 @@ defmodule FeederBot.Telegram.CommandHandler do
       end)
 
     {:ok, {chat_id, "correctly unsubscribed from, '#{url}'"}}
+  end
+
+  # ======== contains
+  defp get_handler({"/contains " <> q, user_id, chat_id}) do
+    message = load_enabled_by_user_id(user_id)
+      |> Enum.flat_map(fn(subscription) ->
+        extract_feed(subscription, fn(feed) ->
+          String.contains?(feed.title, q)
+        end)
+      end)
+      |> Enum.map(fn(item) -> "#{item.title}\n#{item.url}" end)
+      |> Enum.take(10)
+      |> Enum.join("\n\n")
+
+    {:ok, {chat_id, "query result for contains '#{q}':\n#{message}"}}
   end
 
   # ======== list

@@ -9,7 +9,7 @@ defmodule FeederBot do
     Logger.info("starting feeder 🤖")
 
     children = [
-      worker(FeederBot.Telegram.Bot, []),
+      worker(FeederBot.Telegram.Fetcher, []),
       worker(FeederBot.Scheduler, []),
       {Task.Supervisor, name: FeederBot.TaskSupervisor}
     ]

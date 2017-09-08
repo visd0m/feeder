@@ -1,8 +1,8 @@
-defmodule FeederBot.Telegram.Bot do
+defmodule FeederBot.Telegram.Fetcher do
   require Logger
   use GenServer
   import FeederBot.Telegram
-  import FeederBot.Telegram.CommandHandler
+  import FeederBot.Telegram.Command
 
   def start_link() do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
@@ -12,7 +12,7 @@ defmodule FeederBot.Telegram.Bot do
     GenServer.call(__MODULE__, :fetch, 25000)
   end
 
-  # callbacks
+  # ======== callbacks
   def init(_) do
     {:ok, nil}
   end
@@ -20,17 +20,14 @@ defmodule FeederBot.Telegram.Bot do
   def handle_call(:fetch, _from, last_id) do
     new_last_id = case messages = fetch_messages(last_id) do
       [_ | _] ->
-        new_state = List.last(messages)["update_id"]
-
         Task.Supervisor.async_nolink(FeederBot.TaskSupervisor, fn ->
           messages
-            |> Enum.filter(fn(message_wrapper) -> is_command(message_wrapper) end)
-            |> Enum.map(fn(command) -> handle_command(command) end)
-            |> Enum.map(fn(handler) -> handler.() end)
+            |> Enum.filter(&is_command(&1))
+            |> Enum.map(fn(command) -> get_command_handler(command).() end)
             |> Enum.each(fn({_, message}) -> send_message(message) end)
         end)
 
-        new_state
+        List.last(messages)["update_id"]
       _ ->
         nil
     end
@@ -40,15 +37,5 @@ defmodule FeederBot.Telegram.Bot do
 
   def handle_info(_, state) do
     {:noreply, state}
-  end
-
-  # private
-  defp is_command(message_wrapper) do
-    case text = message_wrapper["message"]["text"] do
-      nil ->
-        false
-      _ ->
-        String.starts_with?(text, "/")
-    end
   end
 end
