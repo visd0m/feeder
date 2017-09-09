@@ -91,14 +91,15 @@ defmodule FeederBot.Telegram.Command do
     message = load_enabled_by_user_id(user_id)
       |> Enum.flat_map(fn(subscription) ->
         extract_feed(subscription, fn(feed) ->
-          String.contains?(String.downcase(feed.title), String.downcase(q))
+          String.contains?(String.downcase(feed.title), String.downcase(q)) or
+          String.contains?(String.downcase(feed.description), String.downcase(q))
         end)
       end)
       |> Enum.map(fn(item) -> "#{item.title}\n#{item.url}" end)
       |> Enum.take(10)
       |> Enum.join("\n\n")
 
-    {:ok, {chat_id, "query result for contains '#{q}':\n#{message}"}}
+    {:ok, {chat_id, "#{q} appears in:\n#{message}"}}
   end
 
   # ======== list

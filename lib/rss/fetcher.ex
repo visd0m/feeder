@@ -4,6 +4,7 @@ defmodule FeederBot.Rss.Fetcher do
   import FeederBot.Persistence.SubscriptionDao
   import FeederBot.Telegram
   import FeederBot.Date
+  import FeederBot.Rss.Cache
 
   # ======== public
   def load_subscriptions do
@@ -17,20 +18,35 @@ defmodule FeederBot.Rss.Fetcher do
       end)
   end
 
+  def extract_feed(subscription, filter_fn) do
+    extract_feed(subscription) |> Enum.filter(fn(feed) -> filter_fn.(feed) end)
+  end
+
   def extract_feed(subscription) do
+    with feed = [_|_] <- try_cache(subscription)
+    do
+      feed
+    else
+      [] -> fetch_remotely(subscription)
+    end
+  end
+
+  # ======== private
+  defp fetch_remotely(subscription) do
     case HTTPoison.get(subscription.url) do
       {:ok, response} ->
-        ElixirFeedParser.parse(response.body).entries
+        feed = ElixirFeedParser.parse(response.body).entries
+        put({subscription.url, feed})
+        feed
       {:error, _} ->
         []
     end
   end
 
-  def extract_feed(subscription, filter_fn) do
-    extract_feed(subscription) |> Enum.filter(fn(feed) -> filter_fn.(feed) end)
+  defp try_cache(subscription) do
+    get(subscription.url)
   end
 
-  # ======== private
   defp fetch_subscription(subscription) do
     feed = extract_feed(
       subscription,
