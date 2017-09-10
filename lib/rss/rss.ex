@@ -41,8 +41,8 @@ defmodule FeederBot.Rss do
     {:error, "invalid url"}
   end
 
-  def extract_max_timestamp(feed) do
-    feed.entries
+  def extract_max_timestamp(entries) do
+    entries
       |> Enum.map(fn(entry) -> FeederBot.Date.extract_timestamp(entry.updated) end)
       |> Enum.map(fn({_, timestamp}) -> timestamp end)
       |> Enum.max
