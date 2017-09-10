@@ -19,8 +19,7 @@ defmodule FeederBot.Mixfile do
       extra_applications: [
         :logger,
         :logger_file_backend,
-        :httpoison,
-        :elixir_feed_parser
+        :httpoison
       ]
     ]
   end
@@ -41,8 +40,8 @@ defmodule FeederBot.Mixfile do
       {:poison, "~> 3.1"},
       {:quantum, ">= 2.1.0-beta.1"},
       {:amnesia, "~> 0.2.7"},
-      {:elixir_feed_parser, "~> 0.0.1"},
-      {:timex, "~> 3.1"}
+      {:timex, "~> 3.1"},
+      {:feeder_ex, git: "https://github.com/manukall/feeder_ex.git", branch: "master"}
     ]
   end
 end

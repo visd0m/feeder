@@ -5,6 +5,7 @@ defmodule FeederBot.Rss.Fetcher do
   import FeederBot.Telegram
   import FeederBot.Date
   import FeederBot.Rss.Cache
+  import FeederBot.Rss
 
   # ======== public
   def load_subscriptions do
@@ -35,9 +36,13 @@ defmodule FeederBot.Rss.Fetcher do
   defp fetch_remotely(subscription) do
     case HTTPoison.get(subscription.url) do
       {:ok, response} ->
-        feed = ElixirFeedParser.parse(response.body).entries
-        put({subscription.url, feed})
-        feed
+        with {:ok, feed, _} <- FeederEx.parse(response.body)
+        do
+          put({subscription.url, feed.entries})
+          feed.entries
+        else
+          _ -> []
+        end
       {:error, _} ->
         []
     end
@@ -63,7 +68,7 @@ defmodule FeederBot.Rss.Fetcher do
     feed_entries
       |> Enum.each(fn(entry) -> send_message({
           subscription.chat_id,
-          "#{subscription.tag}\n\n#{entry.title}\n\n#{entry.url}"
+          "#{subscription.tag}\n\n#{entry.title}\n\n#{entry.link}"
         })
       end)
   end
@@ -71,8 +76,8 @@ defmodule FeederBot.Rss.Fetcher do
   defp update_subscription({subscription, feed_entries}) do
     case feed_entries do
       [_ | _] ->
-        {:ok, feed_date} = extract_timestamp(List.first(feed_entries).updated)
-        update(%Subscription{subscription | last_update: feed_date})
+        last_update = extract_max_timestamp(feed_entries)
+        update(%Subscription{subscription | last_update: last_update})
         :ok
         _ -> :ok
     end
