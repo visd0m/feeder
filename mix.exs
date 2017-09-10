@@ -19,7 +19,8 @@ defmodule FeederBot.Mixfile do
       extra_applications: [
         :logger,
         :logger_file_backend,
-        :httpoison
+        :httpoison,
+        :feeder_ex
       ]
     ]
   end
