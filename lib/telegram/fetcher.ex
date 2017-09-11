@@ -20,12 +20,15 @@ defmodule FeederBot.Telegram.Fetcher do
   def handle_call(:fetch, _from, last_id) do
     new_last_id = case messages = fetch_messages(last_id) do
       [_ | _] ->
-        Task.Supervisor.async_nolink(FeederBot.TaskSupervisor, fn ->
-          messages
+        Task.Supervisor.async_nolink(
+          FeederBot.TaskSupervisor,
+          fn ->
+            messages
             |> Enum.filter(&is_command(&1))
-            |> Enum.map(fn(command) -> get_command_handler(command).() end)
-            |> Enum.each(fn({_, message}) -> send_message(message) end)
-        end)
+            |> Enum.map(fn (command) -> get_command_handler(command).() end)
+            |> Enum.each(fn ({_, message}) -> send_message(message) end)
+          end
+        )
 
         List.last(messages)["update_id"]
       _ ->

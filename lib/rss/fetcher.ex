@@ -12,20 +12,26 @@ defmodule FeederBot.Rss.Fetcher do
     subscriptions = load_enabled()
 
     subscriptions
-      |> Enum.each(fn(subscription) ->
-        Task.Supervisor.async_nolink(FeederBot.TaskSupervisor, fn ->
-          fetch_subscription(subscription)
-        end)
-      end)
+    |> Enum.each(
+         fn (subscription) ->
+           Task.Supervisor.async_nolink(
+             FeederBot.TaskSupervisor,
+             fn ->
+               fetch_subscription(subscription)
+             end
+           )
+         end
+       )
   end
 
   def extract_feed(subscription, filter_fn) do
-    extract_feed(subscription) |> Enum.filter(fn(feed) -> filter_fn.(feed) end)
+    extract_feed(subscription)
+    |> Enum.filter(fn (feed) -> filter_fn.(feed) end)
   end
 
   def extract_feed(subscription) do
-    with feed = [_|_] <- try_cache(subscription)
-    do
+    with feed = [_ | _] <- try_cache(subscription)
+      do
       feed
     else
       [] -> fetch_remotely(subscription)
@@ -37,7 +43,7 @@ defmodule FeederBot.Rss.Fetcher do
     case HTTPoison.get(subscription.url) do
       {:ok, response} ->
         with {:ok, feed, _} <- FeederEx.parse(response.body)
-        do
+          do
           put({subscription.url, feed.entries})
           feed.entries
         else
@@ -55,7 +61,7 @@ defmodule FeederBot.Rss.Fetcher do
   defp fetch_subscription(subscription) do
     feed = extract_feed(
       subscription,
-      fn(feed) ->
+      fn (feed) ->
         {:ok, feed_date} = extract_timestamp(feed.updated)
         subscription.last_update < feed_date
       end
@@ -66,11 +72,16 @@ defmodule FeederBot.Rss.Fetcher do
 
   defp send_updates({subscription, feed_entries}) do
     feed_entries
-      |> Enum.each(fn(entry) -> send_message({
-          subscription.chat_id,
-          "#{subscription.tag}\n\n#{entry.title}\n\n#{entry.link}"
-        })
-      end)
+    |> Enum.each(
+         fn (entry) ->
+           send_message(
+             {
+               subscription.chat_id,
+               "#{subscription.tag}\n\n#{entry.title}\n\n#{entry.link}"
+             }
+           )
+         end
+       )
   end
 
   defp update_subscription({subscription, feed_entries}) do
@@ -79,7 +90,7 @@ defmodule FeederBot.Rss.Fetcher do
         last_update = extract_max_timestamp(feed_entries)
         update(%Subscription{subscription | last_update: last_update})
         :ok
-        _ -> :ok
+      _ -> :ok
     end
   end
 end

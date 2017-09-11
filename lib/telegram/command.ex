@@ -33,11 +33,13 @@ defmodule FeederBot.Telegram.Command do
       [_, user_tag] ->
         user_tag
       _ ->
-        :crypto.strong_rand_bytes(10) |> Base.url_encode64 |> binary_part(0, 10)
+        :crypto.strong_rand_bytes(10)
+        |> Base.url_encode64
+        |> binary_part(0, 10)
     end
 
     with false <- is_already_subscribed(url, user_id)
-    do
+      do
       try_subscribe(url, tag, user_id, chat_id)
     else
       _ -> {:error, {chat_id, "already subscribed to url: '#{url}'"}}
@@ -46,7 +48,7 @@ defmodule FeederBot.Telegram.Command do
 
   defp is_already_subscribed(url, user_id) do
     with [] <- load_enabled_by_user_id_and_url(user_id, url)
-    do
+      do
       false
     else
       _ -> true
@@ -55,7 +57,7 @@ defmodule FeederBot.Telegram.Command do
 
   defp try_subscribe(url, tag, user_id, chat_id) do
     with {:ok, timestamp} <- check_subscription(url)
-    do
+      do
       on_valid_subscription(url, tag, user_id, chat_id, timestamp)
       {:ok, {chat_id, "subscription confirmed to: #{url} ✌️ with tag: #{tag}"}}
     else
@@ -79,9 +81,11 @@ defmodule FeederBot.Telegram.Command do
   # ======== unsubscribe
   defp get_handler({"/unsubscribe " <> url, user_id, chat_id}) do
     load_enabled_by_user_id_and_url(user_id, url)
-      |> Enum.each(fn(subscription) ->
-        update(%Subscription{subscription | enabled: false})
-      end)
+    |> Enum.each(
+         fn (subscription) ->
+           update(%Subscription{subscription | enabled: false})
+         end
+       )
 
     {:ok, {chat_id, "correctly unsubscribed from, '#{url}'"}}
   end
@@ -89,15 +93,20 @@ defmodule FeederBot.Telegram.Command do
   # ======== contains
   defp get_handler({"/contains " <> q, user_id, chat_id}) do
     message = load_enabled_by_user_id(user_id)
-      |> Enum.flat_map(fn(subscription) ->
-        extract_feed(subscription, fn(feed) ->
-          String.contains?(String.downcase(feed.title), String.downcase(q)) or
-          String.contains?(String.downcase(feed.description), String.downcase(q))
-        end)
-      end)
-      |> Enum.map(fn(item) -> "#{item.title}\n#{item.url}" end)
-      |> Enum.take(10)
-      |> Enum.join("\n\n")
+              |> Enum.flat_map(
+                   fn (subscription) ->
+                     extract_feed(
+                       subscription,
+                       fn (feed) ->
+                         String.contains?(String.downcase(feed.title), String.downcase(q)) or
+                         String.contains?(String.downcase(feed.description), String.downcase(q))
+                       end
+                     )
+                   end
+                 )
+              |> Enum.map(fn (item) -> "#{item.title}\n#{item.url}" end)
+              |> Enum.take(10)
+              |> Enum.join("\n\n")
 
     {:ok, {chat_id, "#{q} appears in:\n#{message}"}}
   end
@@ -107,8 +116,8 @@ defmodule FeederBot.Telegram.Command do
     subscriptions = load_enabled_by_user_id(user_id)
 
     urls = subscriptions
-      |> Enum.map(fn(subscription) -> "#{subscription.url} with tag: #{subscription.tag}" end)
-      |> Enum.join("\n")
+           |> Enum.map(fn (subscription) -> "#{subscription.url} with tag: #{subscription.tag}" end)
+           |> Enum.join("\n")
 
     {:ok, {chat_id, "enabled subscriptions:\n#{urls}"}}
   end
@@ -123,9 +132,11 @@ defmodule FeederBot.Telegram.Command do
     subscriptions = load_enabled_by_user_id(user_id)
 
     subscriptions
-      |> Enum.each(fn(subscription) ->
-        update(%Subscription{subscription | enabled: false})
-      end)
+    |> Enum.each(
+         fn (subscription) ->
+           update(%Subscription{subscription | enabled: false})
+         end
+       )
 
     {:ok, {chat_id, "I've always hated goodbyes 😩"}}
   end

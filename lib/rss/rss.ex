@@ -12,9 +12,10 @@ defmodule FeederBot.Rss do
 
   def get_rss_last_update(response) do
     headers = response.headers
-    with [_ | _] <- headers |> extract_rss_content_type,
+    with [_ | _] <- headers
+                    |> extract_rss_content_type,
          {:ok, last_update} <- extract_last_update(headers)
-    do
+      do
       {:ok, last_update}
     else
       _ -> error()
@@ -23,18 +24,20 @@ defmodule FeederBot.Rss do
 
   defp extract_rss_content_type(headers) do
     headers
-      |> Enum.filter(fn({key, value}) ->
-        key == "Content-Type" and String.contains?(value, "text/xml")
-      end)
+    |> Enum.filter(
+         fn ({key, value}) ->
+           key == "Content-Type" and String.contains?(value, "text/xml")
+         end
+       )
   end
 
   def extract_last_update(headers) do
     case headers
-      |> Enum.filter(fn({key, value}) -> key == "Last-Modified" end)
-      |> Enum.map(fn({_, value}) -> FeederBot.Date.extract_timestamp(value) end) do
-        [result] -> result
-        _ -> error()
-      end
+         |> Enum.filter(fn ({key, value}) -> key == "Last-Modified" end)
+         |> Enum.map(fn ({_, value}) -> FeederBot.Date.extract_timestamp(value) end) do
+      [result] -> result
+      _ -> error()
+    end
   end
 
   defp error do
@@ -43,8 +46,8 @@ defmodule FeederBot.Rss do
 
   def extract_max_timestamp(entries) do
     entries
-      |> Enum.map(fn(entry) -> FeederBot.Date.extract_timestamp(entry.updated) end)
-      |> Enum.map(fn({_, timestamp}) -> timestamp end)
-      |> Enum.max
+    |> Enum.map(fn (entry) -> FeederBot.Date.extract_timestamp(entry.updated) end)
+    |> Enum.map(fn ({_, timestamp}) -> timestamp end)
+    |> Enum.max
   end
 end

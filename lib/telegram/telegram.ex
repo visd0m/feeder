@@ -46,13 +46,14 @@ defmodule FeederBot.Telegram do
   end
 
   defp get(url, query_params, time_out \\ nil) do
-    case get_request(url, query_params, time_out).() do
-      {:ok, response} ->
-        body = response.body
-        Logger.info("[RES] ==> #{body}")
-        Poison.decode!(body)["result"]
-      {:error, _} ->
-        []
+    with {:ok, response} <- get_request(url, query_params, time_out).() do
+      Logger.info("[RES] ==> #{response.body}")
+      case response.status_code do
+        200 -> Poison.decode!(response.body)["result"]
+        _ -> []
+      end
+    else
+      _ -> []
     end
   end
 

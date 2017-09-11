@@ -4,7 +4,8 @@ defmodule FeederBot.Date do
       nil ->
         {:ok, -1}
       _ ->
-        case date |> Timex.parse("{RFC1123}") do
+        case date
+             |> Timex.parse("{RFC1123}") do
           {:ok, date_time} ->
             {:ok, DateTime.to_unix(date_time)}
           {:error, _} ->
