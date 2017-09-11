@@ -99,7 +99,7 @@ defmodule FeederBot.Telegram.Command do
                        subscription,
                        fn (feed) ->
                          String.contains?(String.downcase(feed.title), String.downcase(q)) or
-                         String.contains?(String.downcase(feed.description), String.downcase(q))
+                         String.contains?(String.downcase(feed.summary), String.downcase(q))
                        end
                      )
                    end
