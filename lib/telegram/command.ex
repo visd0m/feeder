@@ -104,7 +104,7 @@ defmodule FeederBot.Telegram.Command do
                      )
                    end
                  )
-              |> Enum.map(fn (item) -> "#{item.title}\n#{item.url}" end)
+              |> Enum.map(fn (item) -> "#{item.title}\n#{item.link}" end)
               |> Enum.take(10)
               |> Enum.join("\n\n")
 

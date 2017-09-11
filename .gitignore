@@ -22,3 +22,5 @@ erl_crash.dump
 /config/token.txt
 /log
 /Mnesia*
+
+.idea/*
