@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+APP="feeder_bot"
+
+BUILD_HOST="87.248.32.236"
+BUILD_USER="ubuntu"
+BUILD_AT="/tmp/edeliver/feeder_bot/builds"
+
+PRODUCTION_HOSTS="87.248.32.236"
+PRODUCTION_USER="ubuntu"
+DELIVER_TO="~/edeliver/feeder_bot"

@@ -18,6 +18,7 @@ defmodule FeederBot.Mixfile do
   def application do
     # Specify extra applications you'll use from Erlang/Elixir
     [
+      mod: {FeederBot, []},
       extra_applications: [
         :logger,
         :logger_file_backend,
@@ -39,12 +40,14 @@ defmodule FeederBot.Mixfile do
   defp deps do
     [
       {:httpoison, "~> 0.12"},
+      {:edeliver, "~> 1.4.4"},
       {:logger_file_backend, "~> 0.0.7"},
       {:poison, "~> 3.1"},
       {:quantum, ">= 2.1.0-beta.1"},
       {:amnesia, "~> 0.2.7"},
       {:timex, "~> 3.1"},
-      {:feeder_ex, git: "https://github.com/manukall/feeder_ex.git", branch: "master"}
+      {:feeder_ex, git: "https://github.com/manukall/feeder_ex.git", branch: "master"},
+      {:distillery, "~> 1.4", runtime: false}
     ]
   end
 end
