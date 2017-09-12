@@ -6,6 +6,10 @@ BUILD_HOST="87.248.32.236"
 BUILD_USER="ubuntu"
 BUILD_AT="/tmp/edeliver/feeder_bot/builds"
 
+STAGING_HOSTS="87.248.32.236"
+STAGING_USER="ubuntu"
+DELIVER_TO="~/edeliver-staging/feeder_bot"
+
 PRODUCTION_HOSTS="87.248.32.236"
 PRODUCTION_USER="ubuntu"
 DELIVER_TO="~/edeliver/feeder_bot"
