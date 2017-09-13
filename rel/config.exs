@@ -9,7 +9,7 @@ Path.join(["rel", "plugins", "*.exs"])
 use Mix.Releases.Config,
     # This sets the default release built by `mix release`
     default_release: :default,
-    # This sets the default environment used by `mix release`
+      # This sets the default environment used by `mix release`
     default_environment: Mix.env()
 
 # For a full list of config options for both releases
@@ -34,7 +34,7 @@ environment :dev do
 end
 
 environment :prod do
-  set include_erts: true
+  set include_erts: false
   set include_src: false
   set cookie: :"uyM8!^,~p!5_bM]PM(Tc}?.dzv(Ma|oE@8|ww4jT9%Z`6MA%El{=fFL9,`A=pquA"
 end
@@ -47,7 +47,7 @@ end
 release :feeder_bot do
   set version: current_version(:feeder_bot)
   set applications: [
-    :runtime_tools
-  ]
+        :runtime_tools
+      ]
 end
 
