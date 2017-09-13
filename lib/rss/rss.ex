@@ -2,11 +2,21 @@ defmodule FeederBot.Rss do
   import FeederBot.Date
 
   def check_subscription(url) do
+    fetch(url)
+    |> extract_max_timestamp
+  end
+
+  def fetch(url) do
     case HTTPoison.get(url) do
       {:ok, response} ->
-        get_rss_last_update(response)
+        with {:ok, feed, _} <- FeederEx.parse(response.body)
+          do
+          feed.entries
+        else
+          _ -> []
+        end
       {:error, _} ->
-        error()
+        []
     end
   end
 

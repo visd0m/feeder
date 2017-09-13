@@ -34,24 +34,15 @@ defmodule FeederBot.Rss.Fetcher do
       do
       feed
     else
-      [] -> fetch_remotely(subscription)
+      [] -> fetch_remotely(subscription.url)
     end
   end
 
   # ======== private
-  defp fetch_remotely(subscription) do
-    case HTTPoison.get(subscription.url) do
-      {:ok, response} ->
-        with {:ok, feed, _} <- FeederEx.parse(response.body)
-          do
-          put({subscription.url, feed.entries})
-          feed.entries
-        else
-          _ -> []
-        end
-      {:error, _} ->
-        []
-    end
+  def fetch_remotely(url) do
+    entries = fetch(url)
+    put({url, entries})
+    entries
   end
 
   defp try_cache(subscription) do

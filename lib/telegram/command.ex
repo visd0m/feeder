@@ -56,7 +56,7 @@ defmodule FeederBot.Telegram.Command do
   end
 
   defp try_subscribe(url, tag, user_id, chat_id) do
-    with {:ok, timestamp} <- check_subscription(url)
+    with timestamp <- check_subscription(url)
       do
       on_valid_subscription(url, tag, user_id, chat_id, timestamp)
       {:ok, {chat_id, "subscription confirmed to: #{url} ✌️ with tag: #{tag}"}}
