@@ -47,7 +47,7 @@ defmodule FeederBot.Mixfile do
       {:amnesia, "~> 0.2.7"},
       {:timex, "~> 3.1"},
       {:feeder_ex, git: "https://github.com/manukall/feeder_ex.git", branch: "master"},
-      {:distillery, "~> 1.4", runtime: false, warn_missing: false}
+      {:distillery, "~> 1.4", warn_missing: false}
     ]
   end
 end
