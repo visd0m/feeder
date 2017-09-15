@@ -55,9 +55,11 @@ defmodule FeederBot.Rss do
   end
 
   def extract_max_timestamp(entries) do
-    entries
-    |> Enum.map(fn (entry) -> FeederBot.Date.extract_timestamp(entry.updated) end)
-    |> Enum.map(fn ({_, timestamp}) -> timestamp end)
-    |> Enum.max
+    case entries
+         |> Enum.map(fn (entry) -> FeederBot.Date.extract_timestamp(entry.updated) end)
+         |> Enum.map(fn ({_, timestamp}) -> timestamp end) do
+      elems = [_ | _] -> Enum.max(elems)
+      _ -> -1
+    end
   end
 end
