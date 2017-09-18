@@ -146,12 +146,13 @@ defmodule FeederBot.Telegram.Command do
     {:ok, {chat_id, "enabled subscriptions:\n#{urls}"}}
   end
 
-  # ======== list
+  # ======== list_k
   defp get_handler({"/list_k", user_id, chat_id}) do
     subscriptions = load_enabled_by_user_id(user_id)
 
     buttons = subscriptions
               |> Enum.map(fn (subscription) -> ["/recent #{subscription.tag}"] end)
+              |> Enum.uniq
 
     {
       :ok,
