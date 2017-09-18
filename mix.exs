@@ -23,7 +23,8 @@ defmodule FeederBot.Mixfile do
         :logger,
         :logger_file_backend,
         :httpoison,
-        :feeder
+        :feeder,
+        :xmerl
       ]
     ]
   end
