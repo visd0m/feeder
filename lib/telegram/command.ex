@@ -125,6 +125,11 @@ defmodule FeederBot.Telegram.Command do
            )
          end
        )
+    |> format_result
+  end
+
+  defp format_result(entries) do
+    entries
     |> Enum.map(fn (item) -> "#{item.title}\n#{item.link}" end)
     |> Enum.take(10)
     |> Enum.join("\n\n")
@@ -139,6 +144,31 @@ defmodule FeederBot.Telegram.Command do
            |> Enum.join("\n")
 
     {:ok, {chat_id, "enabled subscriptions:\n#{urls}"}}
+  end
+
+  # ======== list
+  defp get_handler({"/list_k", user_id, chat_id}) do
+    subscriptions = load_enabled_by_user_id(user_id)
+
+    buttons = subscriptions
+              |> Enum.map(fn (subscription) -> ["/recent #{subscription.tag}"] end)
+
+    {
+      :ok,
+      {
+        chat_id,
+        "enabled subscriptions:",
+        Poison.encode!(%FeederBot.Telegram.Keyboard{keyboard: buttons})
+      }
+    }
+  end
+
+  # ======== recent
+  defp get_handler({"/recent " <> tag, user_id, chat_id}) do
+    message = load_enabled_by_user_and_tag(user_id, tag)
+              |> Enum.flat_map(fn (subscription) -> extract_feed(subscription)  end)
+              |> format_result
+    {:ok, {chat_id, "###\n#{message}\n###"}}
   end
 
   # ======== start

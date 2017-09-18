@@ -8,6 +8,7 @@ defmodule FeederBot.Telegram do
   @get_updates_path "getUpdates"
   @offset_query_param "offset"
   @tiemout_query_param "timeout"
+  @reply_markup_query_param "reply_markup"
 
   # send_message
   @send_message_path "sendMessage"
@@ -33,14 +34,30 @@ defmodule FeederBot.Telegram do
   end
 
   # send message
-  def send_message({chat_id, text}) do
-    url = "#{@base_url}/#{@bot_id}/#{@send_message_path}"
-
+  def send_message({chat_id, text, keyboard}) do
     options = [
       {@chat_id_query_param, chat_id},
-      {@text_query_param, text}
+      {@text_query_param, text},
+      {@disable_preview_query_param, true},
+      {@reply_markup_query_param, keyboard}
     ]
 
+    send(options)
+  end
+
+  # send message
+  def send_message({chat_id, text}) do
+    options = [
+      {@chat_id_query_param, chat_id},
+      {@disable_preview_query_param, true},
+      {@text_query_param, text},
+    ]
+
+    send(options)
+  end
+
+  defp send(options) do
+    url = "#{@base_url}/#{@bot_id}/#{@send_message_path}"
     get(url, options)
   end
 
