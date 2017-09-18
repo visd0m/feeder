@@ -24,9 +24,9 @@ defmodule FeederBot.Telegram.Command do
     end
   end
 
-  # ======== subscribe (http://an_url.com:tag)
+  # ======== subscribe (http://an_url.com tag)
   defp get_handler({"/subscribe " <> subscription, user_id, chat_id}) do
-    tokens = String.split(subscription, "::")
+    tokens = String.split(subscription, " ")
 
     url = List.first(tokens)
     tag = case tokens do
@@ -56,7 +56,7 @@ defmodule FeederBot.Telegram.Command do
   end
 
   defp try_subscribe(url, tag, user_id, chat_id) do
-    with timestamp <- check_subscription(url)
+    with timestamp <- get_subscription_timestamp(url)
       do
       on_valid_subscription(url, tag, user_id, chat_id, timestamp)
       {:ok, {chat_id, "subscription confirmed to: #{url} ✌️ with tag: #{tag}"}}
@@ -93,22 +93,41 @@ defmodule FeederBot.Telegram.Command do
   # ======== contains
   defp get_handler({"/contains " <> q, user_id, chat_id}) do
     message = load_enabled_by_user_id(user_id)
-              |> Enum.flat_map(
-                   fn (subscription) ->
-                     extract_feed(
-                       subscription,
-                       fn (feed) ->
-                         String.contains?(String.downcase(feed.title), String.downcase(q)) or
-                         String.contains?(String.downcase(feed.summary), String.downcase(q))
-                       end
-                     )
-                   end
-                 )
-              |> Enum.map(fn (item) -> "#{item.title}\n#{item.link}" end)
-              |> Enum.take(10)
-              |> Enum.join("\n\n")
+              |> load_by_query(q)
 
-    {:ok, {chat_id, "#{q} appears in:\n#{message}"}}
+    {:ok, {chat_id, "q: #{q}\n###\n#{message}\n###"}}
+  end
+
+  defp get_handler({"/tag_contains " <> args, user_id, chat_id}) do
+    tokens = String.split(args, " ")
+    case tokens do
+      [tag, q] ->
+        message = load_enabled_by_user_and_tag(user_id, tag)
+                  |> load_by_query(q)
+        {:ok, {chat_id, "q: #{q} on tag: #{tag}\n###\n#{message}\n###"}}
+      _ ->
+        {:ok, {chat_id, "tag_contains invalid arguments"}}
+    end
+
+
+  end
+
+  defp load_by_query(subscriptions, q) do
+    subscriptions
+    |> Enum.flat_map(
+         fn (subscription) ->
+           extract_feed(
+             subscription,
+             fn (feed) ->
+               String.contains?(String.downcase(feed.title), String.downcase(q)) or
+               String.contains?(String.downcase(feed.summary), String.downcase(q))
+             end
+           )
+         end
+       )
+    |> Enum.map(fn (item) -> "#{item.title}\n#{item.link}" end)
+    |> Enum.take(10)
+    |> Enum.join("\n\n")
   end
 
   # ======== list
@@ -138,12 +157,25 @@ defmodule FeederBot.Telegram.Command do
          end
        )
 
-    {:ok, {chat_id, "I've always hated goodbyes 😩"}}
+    {:ok, {chat_id, "Farewell 😩"}}
   end
 
   # ======== help
   defp get_handler({"/help" <> _, _, chat_id}) do
     {:ok, {chat_id, "available commands:\n/subscribe <url>\n/unsubscribe <url>\n/list\n"}}
+  end
+
+  # ======== retag
+  defp get_handler({"/retag " <> args, user_id, chat_id}) do
+    tokens = String.split(args, " ")
+    case tokens do
+      [url, new_tag] ->
+        load_enabled_by_user_id_and_url(user_id, url)
+        |> Enum.each(fn (subscription) -> update(%Subscription{subscription | tag: new_tag}) end)
+        {:ok, {chat_id, "retagged"}}
+      _ ->
+        {:ok, {chat_id, "retag invalid arguments"}}
+    end
   end
 
   # ======== unknwon

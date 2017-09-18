@@ -7,7 +7,8 @@ defmodule FeederBot.Persistence.SubscriptionDao do
     exec_operation(
       fn ->
         subscription
-        |> Subscription.write end
+        |> Subscription.write
+      end
     )
   end
 
@@ -42,6 +43,15 @@ defmodule FeederBot.Persistence.SubscriptionDao do
     exec_operation(
       fn ->
         Subscription.where(user_id == id_p and enabled == true)
+        |> Amnesia.Selection.values
+      end
+    )
+  end
+
+  def load_enabled_by_user_and_tag(id_p, tag_p) do
+    exec_operation(
+      fn ->
+        Subscription.where(user_id == id_p and enabled == true and tag == tag_p)
         |> Amnesia.Selection.values
       end
     )

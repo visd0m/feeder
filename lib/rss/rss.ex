@@ -1,7 +1,7 @@
 defmodule FeederBot.Rss do
   import FeederBot.Date
 
-  def check_subscription(url) do
+  def get_subscription_timestamp(url) do
     fetch(url)
     |> extract_max_timestamp
   end

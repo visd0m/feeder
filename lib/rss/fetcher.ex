@@ -68,7 +68,7 @@ defmodule FeederBot.Rss.Fetcher do
            send_message(
              {
                subscription.chat_id,
-               "#{subscription.tag}\n\n#{entry.title}\n\n#{entry.link}"
+               "[#{subscription.tag}]\n\n#{entry.title}\n\n#{entry.link}"
              }
            )
          end

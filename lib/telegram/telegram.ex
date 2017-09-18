@@ -38,8 +38,7 @@ defmodule FeederBot.Telegram do
 
     options = [
       {@chat_id_query_param, chat_id},
-      {@text_query_param, text},
-      {@disable_preview_query_param, true}
+      {@text_query_param, text}
     ]
 
     get(url, options)
