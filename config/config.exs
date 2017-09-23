@@ -3,21 +3,24 @@
 use Mix.Config
 
 config :logger,
-  backends: [{LoggerFileBackend, :error_log}]
+       backends: [{LoggerFileBackend, :error_log}]
 
-config :logger, :error_log,
-  path: "log/app.log",
-  level: :debug
-
-config :feeder_bot, FeederBot.Scheduler,
-  overlap: false,
-  jobs: [
-      {{:extended, "* * * * *"}, {FeederBot.Telegram.Fetcher, :fetch, []}},
-      {{:cron, "* * * * *"}, {FeederBot.Rss.Fetcher, :load_subscriptions, []}}
-  ]
+config :logger,
+       :error_log,
+       path: "log/app.log",
+       level: :debug
 
 config :feeder_bot,
-  telegram_token: System.get_env("TELEGRAM_TOKEN")
+       FeederBot.Scheduler,
+       overlap: false,
+       jobs: [
+         {{:extended, "* * * * *"}, {FeederBot.Telegram.Fetcher, :fetch, []}},
+         {{:cron, "* * * * *"}, {FeederBot.Rss.Fetcher, :load_subscriptions, []}},
+         {"@daily", {FeederBot.LogDeleter, :delete_logs, []}}
+       ]
+
+config :feeder_bot,
+       telegram_token: System.get_env("TELEGRAM_TOKEN")
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this
