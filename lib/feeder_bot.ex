@@ -1,8 +1,6 @@
 defmodule FeederBot do
-  use FeederBot.Persistence.Database
   use Application
   require Logger
-  import FeederBot.Persistence.SubscriptionDao
 
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
@@ -12,6 +10,7 @@ defmodule FeederBot do
       worker(FeederBot.Telegram.Fetcher, []),
       worker(FeederBot.Scheduler, []),
       worker(FeederBot.Rss.Cache, []),
+      worker(FeederBot.Repo, []),
       {Task.Supervisor, name: FeederBot.TaskSupervisor}
     ]
     opts = [strategy: :one_for_one, name: FeederBot.Supervisor]
@@ -22,9 +21,5 @@ defmodule FeederBot do
     Logger.info("stopping feeder ☠️")
 
     Supervisor.stop(FeederBot.Supervisor)
-  end
-
-  def list_subscription() do
-    load_all()
   end
 end

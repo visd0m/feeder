@@ -20,6 +20,8 @@ defmodule FeederBot.Mixfile do
     [
       mod: {FeederBot, []},
       extra_applications: [
+        :postgrex, 
+        :ecto,
         :logger,
         :logger_file_backend,
         :httpoison,
@@ -45,10 +47,11 @@ defmodule FeederBot.Mixfile do
       {:logger_file_backend, "~> 0.0.7"},
       {:poison, "~> 3.1"},
       {:quantum, ">= 2.1.0-beta.1"},
-      {:amnesia, "~> 0.2.7"},
       {:timex, "~> 3.1"},
       {:feeder_ex, git: "https://github.com/manukall/feeder_ex.git", branch: "master"},
-      {:distillery, "~> 1.4", runtime: false, warn_missing: false}
+      {:distillery, "~> 1.4", runtime: false, warn_missing: false},
+      {:postgrex, "~> 0.13.3"},
+      {:ecto, "~> 2.2.6"}
     ]
   end
 end

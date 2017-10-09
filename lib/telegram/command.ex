@@ -1,9 +1,9 @@
 defmodule FeederBot.Telegram.Command do
   require Logger
-  use FeederBot.Persistence.Database
   import FeederBot.Rss
   import FeederBot.Rss.Fetcher
   import FeederBot.Persistence.SubscriptionDao
+  alias FeederBot.Persistence.Subscription, as: Subscription
 
   def get_command_handler(command) do
     parsed_command = {
@@ -66,16 +66,14 @@ defmodule FeederBot.Telegram.Command do
   end
 
   defp on_valid_subscription(url, tag, user_id, chat_id, timestamp) do
-    insert(
-      %Subscription{
-        user_id: user_id,
-        chat_id: chat_id,
-        url: url,
-        tag: tag,
-        enabled: true,
-        last_update: timestamp
-      }
-    )
+    FeederBot.Repo.insert(%Subscription{
+      user_id: "#{user_id}",
+      chat_id: "#{chat_id}",
+      url: "#{url}",
+      tag: "#{tag}",
+      enabled: true,
+      last_update: timestamp
+    })
   end
 
   # ======== unsubscribe
@@ -83,7 +81,7 @@ defmodule FeederBot.Telegram.Command do
     load_enabled_by_user_id_and_url(user_id, url)
     |> Enum.each(
          fn (subscription) ->
-           update(%Subscription{subscription | enabled: false})
+           update(subscription, %Subscription{subscription | enabled: false})
          end
        )
 
@@ -184,7 +182,7 @@ defmodule FeederBot.Telegram.Command do
     subscriptions
     |> Enum.each(
          fn (subscription) ->
-           update(%Subscription{subscription | enabled: false})
+           update(subscription, %Subscription{subscription | enabled: false})
          end
        )
 
@@ -202,7 +200,7 @@ defmodule FeederBot.Telegram.Command do
     case tokens do
       [url, new_tag] ->
         load_enabled_by_user_id_and_url(user_id, url)
-        |> Enum.each(fn (subscription) -> update(%Subscription{subscription | tag: new_tag}) end)
+        |> Enum.each(fn (subscription) -> update(subscription, %Subscription{subscription | tag: new_tag}) end)
         {:ok, {chat_id, "retagged"}}
       _ ->
         {:ok, {chat_id, "retag invalid arguments"}}

@@ -1,68 +1,60 @@
 defmodule FeederBot.Persistence.SubscriptionDao do
-  use FeederBot.Persistence.Database
-  import FeederBot.Persistence.Database
-  require FeederBot.Persistence.Database.Subscription
+  alias FeederBot.Persistence.Subscription, as: Subscription
+  import Ecto.Query
 
   def insert(subscription) do
-    exec_operation(
-      fn ->
-        subscription
-        |> Subscription.write
-      end
-    )
+    FeederBot.Repo.insert(subscription)
   end
 
-  def update(subscription) do
-    exec_operation(
-      fn ->
-        subscription
-        |> Subscription.write
-      end
+  def update(subscription, new_subscription) do
+    changeset = Subscription.changeset(
+      subscription, 
+      %{enabled: new_subscription.enabled, last_update: new_subscription.last_update, tag: new_subscription.tag}
     )
+    FeederBot.Repo.update!(changeset)
   end
 
   def load_all do
-    exec_operation(
-      fn ->
-        Subscription.where(id >= 1)
-        |> Amnesia.Selection.values
-      end
-    )
+    query = from s in Subscription,
+    select: s
+
+    FeederBot.Repo.all(query)
   end
 
   def load_enabled do
-    exec_operation(
-      fn ->
-        Subscription.where(enabled == true)
-        |> Amnesia.Selection.values
-      end
-    )
+    query = from s in Subscription,
+    where: s.enabled == true,
+    select: s
+
+    FeederBot.Repo.all(query)
   end
 
-  def load_enabled_by_user_id(id_p) do
-    exec_operation(
-      fn ->
-        Subscription.where(user_id == id_p and enabled == true)
-        |> Amnesia.Selection.values
-      end
-    )
+  def load_enabled_by_user_id(user_id) do
+    user_id = "#{user_id}"
+    query = from s in Subscription,
+            where: s.user_id == ^user_id and s.enabled == true,
+            select: s
+
+    FeederBot.Repo.all(query)
   end
 
-  def load_enabled_by_user_and_tag(id_p, tag_p) do
-    exec_operation(
-      fn ->
-        Subscription.where(user_id == id_p and enabled == true and tag == tag_p)
-        |> Amnesia.Selection.values
-      end
-    )
+  def load_enabled_by_user_and_tag(user_id, tag) do
+    user_id = "#{user_id}"
+    tag = "#{tag}"
+    query = from s in Subscription,
+    where: s.user_id == ^user_id and s.tag == ^tag and s.enabled == true,
+    select: s
+
+    FeederBot.Repo.all(query)
   end
 
-  def load_enabled_by_user_id_and_url(id_p, url_p) do
-    exec_operation(
-      fn ->
-        Subscription.where(user_id == id_p and enabled == true and url == url_p)
-        |> Amnesia.Selection.values
-      end
-    )
+  def load_enabled_by_user_id_and_url(user_id, url) do
+    user_id = "#{user_id}"
+    url = "#{url}"
+    query = from s in Subscription,
+    where: s.user_id == ^user_id and s.url == ^url and s.enabled == true,
+    select: s
+
+    FeederBot.Repo.all(query)
   end
 end

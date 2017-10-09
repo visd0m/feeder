@@ -1,15 +1,15 @@
 defmodule FeederBot.Rss.Fetcher do
-  use FeederBot.Persistence.Database
   require Logger
   import FeederBot.Persistence.SubscriptionDao
   import FeederBot.Telegram
   import FeederBot.Date
   import FeederBot.Rss.Cache
   import FeederBot.Rss
+  alias FeederBot.Persistence.Subscription, as: Subscription
 
   # ======== public
   def load_subscriptions do
-    subscriptions = load_enabled()
+    subscriptions = load_enabled
 
     subscriptions
     |> Enum.each(
@@ -79,7 +79,7 @@ defmodule FeederBot.Rss.Fetcher do
     case feed_entries do
       [_ | _] ->
         last_update = extract_max_timestamp(feed_entries)
-        update(%Subscription{subscription | last_update: last_update})
+        update(subscription, %Subscription{subscription | last_update: last_update})
         :ok
       _ -> :ok
     end
