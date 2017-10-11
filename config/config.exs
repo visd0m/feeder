@@ -28,7 +28,7 @@ config :feeder_bot,
        FeederBot.Repo,
        adapter: Ecto.Adapters.Postgres,
        database: System.get_env("DATABASE"),
-       username: System.get_env("DATABASE_USERNAME"),
+       username: System.get_env("DATABASE_USERNAME")
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this
