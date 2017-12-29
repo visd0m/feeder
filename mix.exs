@@ -4,7 +4,7 @@ defmodule FeederBot.Mixfile do
   def project do
     [
       app: :feeder_bot,
-      version: "1.0.7",
+      version: "1.0.8",
       elixir: "~> 1.4",
       build_embedded: Mix.env == :prod,
       start_permanent: Mix.env == :prod,
@@ -20,7 +20,7 @@ defmodule FeederBot.Mixfile do
     [
       mod: {FeederBot, []},
       extra_applications: [
-        :postgrex, 
+        :postgrex,
         :ecto,
         :logger,
         :logger_file_backend,
