@@ -21,14 +21,12 @@ defmodule FeederBot.Telegram.Command do
         false
       _ ->
         String.starts_with?(text, "/")
-        String.split
     end
   end
 
   # ======== subscribe (http://an_url.com tag)
   defp get_handler({"/subscribe " <> subscription, user_id, chat_id}) do
     tokens = String.split(subscription, " ")
-    Stri
 
     url = List.first(tokens)
     tag = case tokens do
