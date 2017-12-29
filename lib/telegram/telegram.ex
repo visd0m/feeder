@@ -38,7 +38,7 @@ defmodule FeederBot.Telegram do
     options = [
       {@chat_id_query_param, chat_id},
       {@text_query_param, text},
-      {@disable_preview_query_param, true},
+      {@disable_preview_query_param, false},
       {@reply_markup_query_param, keyboard}
     ]
 
@@ -49,7 +49,7 @@ defmodule FeederBot.Telegram do
   def send_message({chat_id, text}) do
     options = [
       {@chat_id_query_param, chat_id},
-      {@disable_preview_query_param, true},
+      {@disable_preview_query_param, false},
       {@text_query_param, text},
     ]
 

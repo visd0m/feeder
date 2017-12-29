@@ -21,12 +21,14 @@ defmodule FeederBot.Telegram.Command do
         false
       _ ->
         String.starts_with?(text, "/")
+        String.split
     end
   end
 
   # ======== subscribe (http://an_url.com tag)
   defp get_handler({"/subscribe " <> subscription, user_id, chat_id}) do
     tokens = String.split(subscription, " ")
+    Stri
 
     url = List.first(tokens)
     tag = case tokens do
@@ -66,14 +68,16 @@ defmodule FeederBot.Telegram.Command do
   end
 
   defp on_valid_subscription(url, tag, user_id, chat_id, timestamp) do
-    FeederBot.Repo.insert(%Subscription{
-      user_id: "#{user_id}",
-      chat_id: "#{chat_id}",
-      url: "#{url}",
-      tag: "#{tag}",
-      enabled: true,
-      last_update: timestamp
-    })
+    FeederBot.Repo.insert(
+      %Subscription{
+        user_id: "#{user_id}",
+        chat_id: "#{chat_id}",
+        url: "#{url}",
+        tag: "#{tag}",
+        enabled: true,
+        last_update: timestamp
+      }
+    )
   end
 
   # ======== unsubscribe
